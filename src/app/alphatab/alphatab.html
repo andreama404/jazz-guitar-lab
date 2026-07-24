@@ -1,3 +1,9 @@
 <div class="at-wrap">
+  <div class="at-controls">
+    <button type="button" [disabled]="!playerReady()" (click)="togglePlay()">
+      {{ isPlaying() ? 'Pausa' : 'Play' }}
+    </button>
+    <button type="button" [disabled]="!playerReady()" (click)="stop()">Stop</button>
+  </div>
   <div #alphaTabViewPort class="at-viewport"></div>
 </div>

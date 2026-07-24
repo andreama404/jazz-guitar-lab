@@ -2,6 +2,12 @@
   width: 100%;
 }
 
+.at-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
 .at-viewport {
   width: 100%;
   min-height: 400px;
