@@ -1,0 +1,67 @@
+<svg [attr.viewBox]="'0 0 ' + width() + ' ' + height()" [attr.width]="width()" [attr.height]="height()" class="overflow-visible">
+  <!-- fret label for barre/moved shapes -->
+  @if (fretLabel()) {
+    <text [attr.x]="8" [attr.y]="frets()[0] + 25" class="fill-slate-500 text-xs">{{ fretLabel() }}</text>
+  }
+
+  <!-- nut or top fret line -->
+  <line
+    [attr.x1]="strings()[0]"
+    [attr.y1]="frets()[0]"
+    [attr.x2]="strings()[strings().length - 1]"
+    [attr.y2]="frets()[0]"
+    [attr.stroke-width]="showNut() ? 4 : 1"
+    class="stroke-slate-700"
+  />
+
+  <!-- fret lines -->
+  @for (y of frets(); track $index) {
+    <line
+      [attr.x1]="strings()[0]"
+      [attr.y1]="y"
+      [attr.x2]="strings()[strings().length - 1]"
+      [attr.y2]="y"
+      stroke-width="1"
+      class="stroke-slate-300"
+    />
+  }
+
+  <!-- strings -->
+  @for (x of strings(); track $index) {
+    <line [attr.x1]="x" [attr.y1]="frets()[0]" [attr.x2]="x" [attr.y2]="frets()[frets().length - 1]" stroke-width="1" class="stroke-slate-400" />
+  }
+
+  <!-- open / muted string markers -->
+  @for (stringNumber of [1, 2, 3, 4, 5, 6]; track stringNumber) {
+    @if (isMuted(stringNumber)) {
+      <text [attr.x]="stringX(stringNumber)" [attr.y]="openY()" text-anchor="middle" class="fill-slate-500 text-sm font-bold">✕</text>
+    }
+  }
+
+  <!-- fretted / open dots -->
+  @for (dot of dots(); track dot.string + '-' + dot.fret) {
+    @if (isOpenDot(dot)) {
+      @if (dot.label) {
+        <circle [attr.cx]="stringX(dot.string)" [attr.cy]="openY()" r="9" [class.fill-slate-900]="dot.root" [class.fill-emerald-500]="!dot.root" />
+        <text [attr.x]="stringX(dot.string)" [attr.y]="openY() + 4" text-anchor="middle" class="fill-white text-xs font-bold">
+          {{ dot.label }}
+        </text>
+      } @else {
+        <circle [attr.cx]="stringX(dot.string)" [attr.cy]="openY()" r="6" class="fill-none stroke-slate-700" stroke-width="2" />
+      }
+    } @else {
+      <circle
+        [attr.cx]="stringX(dot.string)"
+        [attr.cy]="dotY(dot.fret)"
+        r="9"
+        [class.fill-slate-900]="dot.root"
+        [class.fill-emerald-500]="!dot.root"
+      />
+      @if (dot.label) {
+        <text [attr.x]="stringX(dot.string)" [attr.y]="dotY(dot.fret) + 4" text-anchor="middle" class="fill-white text-xs font-bold">
+          {{ dot.label }}
+        </text>
+      }
+    }
+  }
+</svg>

@@ -1,0 +1,22 @@
+\title "Alice in Wonderland"
+\subtitle "Sammy Fain / Bob Hilliard"
+\tempo 120
+.
+// Sezione A - Melodia e Accordi (Real Book pag. 17)
+:2 3.2{ch "Dm7"} :4 0.3 |
+:2 4.3{ch "G7"} :4 4.2 |
+:2 0.4{ch "Cmaj7"} :4 5.3 |
+:2 5.2{ch "Fmaj7" d} |
+:2 0.3{ch "Bm7b5"} :4 4.3 |
+:2 4.2{ch "E7"} :4 0.4 |
+:2 5.3{ch "Am7"} :4 5.2 |
+:2 5.1{ch "Eb7" d} |
+
+// Seconda parte della Sezione A
+:2 3.2{ch "Dm7"} :4 0.3 |
+:2 4.3{ch "G7"} :4 4.2 |
+:2 0.4{ch "Em7"} :4 5.3 |
+:2 5.2{ch "Am7" d} |
+:2 0.4{ch "Dm7"} :4 5.3 |
+:2 4.3{ch "G7" d} |
+:2 5.3{ch "Cmaj7" d} |

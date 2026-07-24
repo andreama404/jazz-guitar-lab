@@ -48,6 +48,11 @@ export class Alphatab implements AfterViewInit, OnDestroy {
     settings.player.enableCursor = true;
     settings.display.layoutMode = alphaTab.LayoutMode.Page;
     settings.display.barsPerRow = 4;
+    settings.notation.elements.set(alphaTab.NotationElement.BarNumber, false);
+    const chordNameFont = settings.display.resources.elementFonts.get(alphaTab.NotationElement.EffectChordNames);
+    if (chordNameFont) {
+      settings.display.resources.elementFonts.set(alphaTab.NotationElement.EffectChordNames, chordNameFont.withSize(16));
+    }
     settings.player.soundFont = '/assets/alphatab/soundfont/sonivox.sf2';
 
     this.api = new alphaTab.AlphaTabApi(this.viewPort().nativeElement, settings);

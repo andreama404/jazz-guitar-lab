@@ -1,0 +1,74 @@
+<div class="flex h-full w-full overflow-hidden">
+  <main class="min-w-0 flex-1 overflow-y-auto px-6 py-10">
+    <h1 class="mb-6 text-3xl font-bold text-slate-800">Brani</h1>
+    @if (selectedScore(); as score) {
+      <app-alphatab [scoreFile]="score.file"></app-alphatab>
+    } @else {
+      <p class="text-slate-500">Seleziona un brano dalla lista a destra.</p>
+    }
+  </main>
+
+  <aside class="flex h-full w-72 shrink-0 flex-col border-l border-slate-200 bg-white">
+    <div class="relative shrink-0 p-4 pb-2">
+      <input
+        type="search"
+        aria-label="Cerca un brano"
+        placeholder="Cerca un brano…"
+        class="w-full rounded-lg border border-slate-200 px-3 py-2 pr-8 text-sm text-slate-700 focus:border-slate-400 focus:outline-none"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+      @if (search()) {
+        <button
+          type="button"
+          aria-label="Cancella ricerca"
+          class="absolute top-1/2 right-6 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+          (click)="search.set('')"
+        >
+          ✕
+        </button>
+      }
+    </div>
+
+    <ul class="flex-1 overflow-y-auto px-4 pb-4">
+      @for (score of filteredScores(); track score.id) {
+        <li>
+          <button
+            type="button"
+            class="w-full rounded-lg px-3 py-2 text-left text-sm transition"
+            [class.bg-slate-900]="selectedScore()?.id === score.id"
+            [class.text-white]="selectedScore()?.id === score.id"
+            [class.text-slate-700]="selectedScore()?.id !== score.id"
+            [class.hover:bg-slate-100]="selectedScore()?.id !== score.id"
+            (click)="selectScore(score.id)"
+          >
+            <span class="block font-medium">
+              @for (segment of score.title | highlight: search(); track $index) {
+                @if (segment.match) {
+                  <mark class="rounded-sm bg-amber-300 text-slate-900">{{ segment.text }}</mark>
+                } @else {
+                  {{ segment.text }}
+                }
+              }
+            </span>
+            <span
+              class="block text-xs"
+              [class.text-slate-300]="selectedScore()?.id === score.id"
+              [class.text-slate-400]="selectedScore()?.id !== score.id"
+            >
+              @for (segment of score.artist | highlight: search(); track $index) {
+                @if (segment.match) {
+                  <mark class="rounded-sm bg-amber-300 text-slate-900">{{ segment.text }}</mark>
+                } @else {
+                  {{ segment.text }}
+                }
+              }
+            </span>
+          </button>
+        </li>
+      } @empty {
+        <li class="px-3 py-2 text-sm text-slate-400">Nessun brano trovato.</li>
+      }
+    </ul>
+  </aside>
+</div>

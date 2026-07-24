@@ -1,0 +1,13 @@
+<main class="h-full w-full overflow-y-auto px-6 py-10">
+  <a routerLink="/scales" class="mb-6 inline-block text-sm text-slate-500 hover:text-slate-700">&larr; Tutte le scale</a>
+
+  @if (scale(); as s) {
+    <div class="flex flex-col items-center gap-4 rounded-xl bg-white p-8 shadow" style="max-width: 420px">
+      <h1 class="text-2xl font-bold text-slate-800">{{ s.name }}</h1>
+      <p class="text-center text-sm text-slate-500">{{ s.description }}</p>
+      <app-fretboard-diagram [dots]="s.dots" [startFret]="s.startFret" [fretCount]="s.fretCount"></app-fretboard-diagram>
+    </div>
+  } @else {
+    <p class="text-slate-500">Scala non trovata.</p>
+  }
+</main>

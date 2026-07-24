@@ -29,4 +29,40 @@ export const SCORES: readonly ScoreEntry[] = [
     artist: 'Trad. — esempio MusicXML',
     file: '/scores/happy-birthday.musicxml',
   },
+  {
+    id: 'melodia-con-accordi',
+    title: 'Melodia con Accordi (esempio)',
+    artist: 'esempio chord symbols',
+    file: '/scores/melodia-con-accordi.alphatex',
+  },
+  {
+    id: 'alice-in-wonderland',
+    title: 'Alice in Wonderland',
+    artist: 'Sammy Fain / Bob Hilliard',
+    file: '/scores/alice-in-wonderland.alphatex',
+  },
+  {
+    id: 'autumn-leaves',
+    title: 'Autumn Leaves (estratto)',
+    artist: 'Joseph Kosma',
+    file: '/scores/autumn-leaves.alphatex',
+  },
+  {
+    id: 'misty',
+    title: 'Misty (estratto)',
+    artist: 'Erroll Garner',
+    file: '/scores/misty.alphatex',
+  },
+  {
+    id: 'all-of-me',
+    title: 'All of Me (estratto)',
+    artist: 'Gerald Marks / Seymour Simons',
+    file: '/scores/all-of-me.alphatex',
+  },
+  {
+    id: 'estate',
+    title: 'Estate (estratto)',
+    artist: 'Bruno Martino',
+    file: '/scores/estate.alphatex',
+  },
 ];

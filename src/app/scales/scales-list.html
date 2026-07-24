@@ -1,0 +1,84 @@
+<main class="h-full w-full overflow-y-auto px-6 py-10">
+  <h1 class="mb-6 text-3xl font-bold text-slate-800">Scale</h1>
+
+  @for (group of groups; track group.title) {
+    <section class="mb-10">
+      <h2 class="mb-1 text-lg font-semibold text-slate-700">{{ group.title }}</h2>
+      @if (group.allKeys) {
+        <div class="mb-6 overflow-x-auto">
+          <table class="w-fit overflow-hidden rounded-lg text-left text-sm shadow">
+            <thead>
+              <tr class="bg-slate-900 text-white">
+                <th class="px-4 py-2 font-semibold">Scala</th>
+                <th class="px-4 py-2 font-semibold">I</th>
+                <th class="px-4 py-2 font-semibold">II</th>
+                <th class="px-4 py-2 font-semibold">III</th>
+                <th class="px-4 py-2 font-semibold">IV</th>
+                <th class="px-4 py-2 font-semibold">V</th>
+                <th class="px-4 py-2 font-semibold">VI</th>
+                <th class="px-4 py-2 font-semibold">VII</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (k of group.allKeys; track k.key) {
+                <tr class="odd:bg-white even:bg-slate-50">
+                  <td class="px-4 py-1.5 font-semibold text-slate-700">{{ k.key }}</td>
+                  @for (note of k.notes; track $index) {
+                    <td class="px-4 py-1.5 text-slate-600">{{ note }}</td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      @if (group.degreeTriads) {
+        <div class="mb-6 overflow-x-auto">
+          <table class="w-fit overflow-hidden rounded-lg text-left text-sm shadow">
+            <thead>
+              <tr class="bg-slate-900 text-white">
+                <th class="px-4 py-2 font-semibold">Grado</th>
+                <th class="px-4 py-2 font-semibold">Triade</th>
+                <th class="px-4 py-2 font-semibold">Distanza dal grado prec.</th>
+                <th class="px-4 py-2 font-semibold">Intervallo dalla tonica</th>
+                <th class="px-4 py-2 font-semibold">Accordo (in Do)</th>
+                <th class="px-4 py-2 font-semibold">Note dell'accordo</th>
+                <th class="px-4 py-2 font-semibold">Accordo 4 voci</th>
+                <th class="px-4 py-2 font-semibold">Note (4 voci)</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (d of group.degreeTriads; track d.degree) {
+                <tr class="odd:bg-white even:bg-slate-50">
+                  <td class="px-4 py-1.5 text-slate-700">{{ d.degree }}</td>
+                  <td class="px-4 py-1.5 text-slate-600">{{ d.quality }}</td>
+                  <td class="px-4 py-1.5 font-mono text-slate-600">{{ d.interval }}</td>
+                  <td class="px-4 py-1.5 text-slate-600">{{ d.intervalFromRoot }}</td>
+                  <td class="px-4 py-1.5 font-semibold text-slate-700">{{ d.chord }}</td>
+                  <td class="px-4 py-1.5 text-slate-600">
+                    {{ d.chordNotes.join(' - ') }}
+                    <span class="font-mono text-slate-400">({{ d.chordIntervals.join('-') }})</span>
+                  </td>
+                  <td class="px-4 py-1.5 font-semibold text-slate-700">{{ d.chord7 }}</td>
+                  <td class="px-4 py-1.5 text-slate-600">
+                    {{ d.chord7Notes.join(' - ') }}
+                    <span class="font-mono text-slate-400">({{ d.chord7Intervals.join('-') }})</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      <h3 class="mb-4 text-xl font-bold text-slate-800">Posizioni</h3>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        @for (scale of group.scales; track scale.id) {
+          <a [routerLink]="['/scales', scale.id]" class="flex flex-col items-center gap-3 rounded-xl bg-white p-4 shadow transition hover:shadow-md">
+            <span class="text-sm font-semibold text-slate-800">{{ scale.name }}</span>
+            <app-fretboard-diagram [dots]="scale.dots" [startFret]="scale.startFret" [fretCount]="scale.fretCount"></app-fretboard-diagram>
+          </a>
+        }
+      </div>
+    </section>
+  }
+</main>

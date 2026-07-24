@@ -1,0 +1,12 @@
+\title "Melodia con Accordi (esempio)"
+\subtitle "melodia + chord symbols"
+\tempo 100
+.
+0.3{ch "C"} 2.3 3.3 2.3 |
+0.4{ch "Am"} 2.4 3.4 2.4 |
+1.4{ch "F"} 3.4 1.4 3.4 |
+3.5{ch "G"} 0.4 2.4 3.5 |
+0.3{ch "C"} 2.3 3.3 2.3 |
+0.4{ch "Am"} 2.4 3.4 2.4 |
+1.4{ch "F"} 3.4 1.4 3.4 |
+3.5{ch "G"} 3.5 3.5 3.5 |

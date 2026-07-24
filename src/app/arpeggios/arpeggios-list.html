@@ -1,0 +1,23 @@
+<main class="h-full w-full overflow-y-auto px-6 py-10">
+  <h1 class="mb-6 text-3xl font-bold text-slate-800">Arpeggi</h1>
+
+  @for (group of groups; track group.title) {
+    <section class="mb-10">
+      <h2 class="mb-4 text-lg font-semibold text-slate-700">{{ group.title }}</h2>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        @for (arpeggio of group.arpeggios; track arpeggio.id) {
+          <a
+            [routerLink]="['/arpeggios', arpeggio.id]"
+            class="flex flex-col items-center gap-3 rounded-xl bg-white p-4 shadow transition hover:shadow-md"
+          >
+            <span class="text-sm font-semibold text-slate-800">{{ arpeggio.name }}</span>
+            @if (arpeggio.notes) {
+              <span class="text-xs text-slate-400">{{ arpeggio.notes.join(' - ') }}</span>
+            }
+            <app-fretboard-diagram [dots]="arpeggio.dots" [startFret]="arpeggio.startFret" [fretCount]="arpeggio.fretCount"></app-fretboard-diagram>
+          </a>
+        }
+      </div>
+    </section>
+  }
+</main>
