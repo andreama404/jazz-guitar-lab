@@ -1,4 +1,13 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, signal, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  effect,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import type * as AlphaTab from '@coderline/alphatab';
 
 @Component({
@@ -8,11 +17,20 @@ import type * as AlphaTab from '@coderline/alphatab';
   styleUrl: './alphatab.scss',
 })
 export class Alphatab implements AfterViewInit, OnDestroy {
+  readonly scoreFile = input.required<string>();
+
   private readonly viewPort = viewChild.required<ElementRef<HTMLDivElement>>('alphaTabViewPort');
   private api?: AlphaTab.AlphaTabApi;
 
   protected readonly playerReady = signal(false);
   protected readonly isPlaying = signal(false);
+
+  constructor() {
+    effect(() => {
+      const file = this.scoreFile();
+      void this.loadScore(file);
+    });
+  }
 
   ngAfterViewInit(): void {
     void this.initAlphaTab();
@@ -28,13 +46,30 @@ export class Alphatab implements AfterViewInit, OnDestroy {
     const settings = new alphaTab.Settings();
     settings.player.playerMode = alphaTab.PlayerMode.EnabledAutomatic;
     settings.player.enableCursor = true;
+    settings.display.layoutMode = alphaTab.LayoutMode.Page;
+    settings.display.barsPerRow = 4;
     settings.player.soundFont = '/assets/alphatab/soundfont/sonivox.sf2';
 
     this.api = new alphaTab.AlphaTabApi(this.viewPort().nativeElement, settings);
     this.api.playerReady.on(() => this.playerReady.set(true));
     this.api.playerStateChanged.on((e) => this.isPlaying.set(e.state === alphaTab.synth.PlayerState.Playing));
 
-    this.api.tex(String.raw`\title "Alpha Jazz Tabs" \tempo 120 . 3.3 3.3 3.4 3.5 | 3.5 3.4 3.3 3.3 |`);
+    await this.loadScore(this.scoreFile());
+  }
+
+  private async loadScore(file: string): Promise<void> {
+    if (!this.api) {
+      return;
+    }
+    if (file.endsWith('.alphatex') || file.endsWith('.tex')) {
+      const response = await fetch(file);
+      const tex = await response.text();
+      this.api.tex(tex);
+    } else {
+      // Binary/XML formats (Guitar Pro, MusicXML, Capella, ...) are auto-detected by
+      // alphaTab from the loaded bytes, so the URL can be handed to it directly.
+      this.api.load(file);
+    }
   }
 
   protected togglePlay(): void {
