@@ -2,16 +2,17 @@ import { NgClass } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Note } from 'tonal';
+import { Chord, Note } from 'tonal';
 import { buildScale, findScaleType } from '../scales/scale-theory';
 import { PlayButton } from '../shared/play-button';
 
 type Mark = 'ok' | 'warn' | 'no';
 
-interface BarScale {
-  /** Scale root and type (an id of SCALE_TYPES). */
-  root: string;
-  type: string;
+interface BarPart {
+  chord: string;
+  /** Scale root and type (an id of SCALE_TYPES); missing when no pentatonic fits. */
+  root?: string;
+  type?: string;
   mark: Mark;
   /** What to know about this scale on this chord. */
   note?: string;
@@ -21,10 +22,8 @@ export interface BluesExercise {
   id: string;
   title: string;
   intro: string[];
-  /** The chord of each bar. */
-  chords: string[];
-  /** One entry per bar of the 12-bar form. */
-  bars: BarScale[];
+  /** One entry per bar of the 12-bar form; a bar holds one or two chords. */
+  bars: BarPart[][];
 }
 
 export interface BluesKey {
@@ -67,13 +66,16 @@ function theory(key: string) {
     b7bVI: Note.transpose(bVI, '7m'),
     standard: [I, I, I, I, IV, IV, I, I, V, IV, I, V].map((r) => `${r}7`),
     quickChange: [I, IV, I, I, IV, IV, I, I, V, IV, I, V].map((r) => `${r}7`),
+    jazz: [[I, '7'], [IV, '7'], [I, '7'], [V, 'm7', I, '7'], [IV, '7'], [up(IV, '1A'), 'dim7'], [I, '7'], [up(I, '3M'), 'm7', up(I, '6M'), '7'], [up(I, '2M'), 'm7'], [V, '7'], [I, '7', up(I, '6M'), '7'], [up(I, '2M'), 'm7', V, '7']].map((bar) =>
+      bar.reduce<string[]>((chords, x, i) => (i % 2 === 0 ? [...chords, x + bar[i + 1]] : chords), []),
+    ),
     minor: [`${I}m7`, `${I}m7`, `${I}m7`, `${I}m7`, `${IV}m7`, `${IV}m7`, `${I}m7`, `${I}m7`, `${bVI}7`, `${V}7`, `${I}m7`, `${V}7`],
   };
 }
 
-const forChord = (chords: string[], f: (chord: string, bar: number) => BarScale): BarScale[] => chords.map((c, i) => f(c, i));
+const forChord = (chords: string[], f: (chord: string, bar: number) => Omit<BarPart, 'chord'>): BarPart[][] => chords.map((c, i) => [{ chord: c, ...f(c, i) }]);
 /** "Dm7" -> "D", "Bb7" -> "Bb". */
-const rootOf = (chord: string): string => chord.replace(/m?7$/, '');
+const rootOf = (chord: string): string => chord.replace(/(dim|m)?7$/, '');
 
 /** The blues exercises in a key. */
 export function bluesExercises(key: string): BluesExercise[] {
@@ -91,7 +93,6 @@ export function bluesExercises(key: string): BluesExercise[] {
         `Su ogni battuta si usa la pentatonica maggiore (1 2 3 5 6) dell'accordo: ${n(t.I)} maggiore su ${chordI}, ${n(t.IV)} su ${chordIV}, ${n(t.V)} su ${chordV}. Si cambia scala insieme all'accordo.`,
         `La terza dell'accordo (${n(t.maj3I)}, ${n(t.maj3IV)}, ${n(t.maj3V)}) è sempre dentro la scala, quindi niente urta con l'armonia. Manca la settima minore: il suono è più dolce e "country" del blues scuro.`,
       ],
-      chords: t.standard,
       bars: forChord(t.standard, (c) => ({ root: rootOf(c), type: maj, mark: 'ok' })),
     },
     {
@@ -101,7 +102,6 @@ export function bluesExercises(key: string): BluesExercise[] {
         `Qui la scala è una sola, ${n(t.I)} maggiore pentatonica, su tutto il giro. Ogni battuta dice se funziona.`,
         `Su ${chordI} è la scala giusta: ${n(t.maj3I)} è la terza dell'accordo. Su ${chordV} funziona: ${n(t.I)} è solo una tensione di passaggio (quarta di ${n(t.V)}). Su ${chordIV} no: ${n(t.maj3I)} urta con la settima dell'accordo (${n(t.b7IV)}), e conviene passare alla ${n(t.IV)} maggiore pentatonica o alla ${n(t.I)} minore pentatonica.`,
       ],
-      chords: t.standard,
       bars: forChord(t.standard, (c) =>
         c === chordI
           ? { root: t.I, type: maj, mark: 'ok', note: `${n(t.maj3I)} è la terza` }
@@ -118,7 +118,6 @@ export function bluesExercises(key: string): BluesExercise[] {
         `Il ${n(t.min3I)} (♭3) contro il ${n(t.maj3I)} di ${chordI} è la tensione tipica del blues, la "blue third". Su ${chordIV} il ${n(t.min3I)} è la settima dell'accordo e il ${n(t.b7I)} la quarta: suona molto stabile. Su ${chordV} il ${n(t.b7I)} urta con il ${n(t.maj3V)} (terza di ${n(t.V)}): è accettato nel blues, ma conviene appoggiarsi su ${n(t.I)} e ${n(t.V)}.`,
         'Il blues scuro usa la minore pentatonica; quello dolce la maggiore. Mescolarle, per esempio maggiore sul I e minore sul IV e sul V, è il suono del blues.',
       ],
-      chords: t.standard,
       bars: forChord(t.standard, (c) =>
         c === chordV
           ? { root: t.I, type: min, mark: 'warn', note: `${n(t.b7I)} urta con ${n(t.maj3V)} (3ª): appoggiati su ${n(t.I)} e ${n(t.V)}` }
@@ -134,7 +133,6 @@ export function bluesExercises(key: string): BluesExercise[] {
         `La blues scale è la minore pentatonica di ${n(t.I)} con in più la ♭5, il ${n(blueNote)}: la "blue note". Su tutto il giro valgono le stesse indicazioni della minore pentatonica.`,
         `Il ${n(blueNote)} è una nota di passaggio: si usa per muoversi tra ${n(t.IV)} e ${n(t.V)} (o tra ${n(t.V)} e ${n(t.IV)}) e non ci si ferma. Su ${chordV} il ${n(t.b7I)} urta con il ${n(t.maj3V)} come nella minore pentatonica; la blue note aggiunge un'altra tensione, quindi appoggiati su ${n(t.I)} e ${n(t.V)}.`,
       ],
-      chords: t.standard,
       bars: forChord(t.standard, (c) =>
         c === chordV
           ? { root: t.I, type: 'blues', mark: 'warn', note: `${n(t.b7I)} urta con ${n(t.maj3V)}: appoggiati su ${n(t.I)} e ${n(t.V)}` }
@@ -148,7 +146,6 @@ export function bluesExercises(key: string): BluesExercise[] {
         `Il giro con il "quick change": il IV grado (${chordIV}) arriva già alla battuta 2, la forma più diffusa del blues. Si alternano le due pentatoniche.`,
         `Sul I si usa la maggiore di ${n(t.I)} (dolce); sul IV la minore di ${n(t.I)}, che dà la settima (${n(t.min3I)}) e la quarta (${n(t.b7I)}) di ${chordIV}; sul V la maggiore di ${n(t.V)}. Il contrasto tra dolce e scuro è proprio il suono del blues.`,
       ],
-      chords: t.quickChange,
       bars: forChord(t.quickChange, (c) =>
         c === chordI
           ? { root: t.I, type: maj, mark: 'ok', note: `${n(t.maj3I)} è la terza` }
@@ -164,13 +161,32 @@ export function bluesExercises(key: string): BluesExercise[] {
         `Il blues minore ha gli accordi minori sul I e sul IV (${t.I}m7, ${t.IV}m7); le ultime battute usano ${t.bVI}7 e ${t.V}7. La minore pentatonica di ${n(t.I)} è la scala di tutto il giro.`,
         `La pentatonica maggiore di ${n(t.I)} non funziona sugli accordi minori: il ${n(t.maj3I)} urta con il ${n(t.min3I)}, la terza minore. Su ${t.bVI}7 il ${n(t.p5I)} urta con il ${n(t.b7bVI)} (settima dell'accordo); su ${t.V}7 il ${n(t.b7I)} urta con il ${n(t.maj3V)}: in entrambi i casi appoggiati su note stabili come ${n(t.I)}.`,
       ],
-      chords: t.minor,
       bars: forChord(t.minor, (c) =>
         c === `${t.bVI}7`
           ? { root: t.I, type: min, mark: 'warn', note: `${n(t.p5I)} urta con ${n(t.b7bVI)} (7ª di ${n(t.bVI)}): appoggiati su ${n(t.I)} e ${n(t.min3I)}` }
           : c === `${t.V}7`
             ? { root: t.I, type: min, mark: 'warn', note: `${n(t.b7I)} urta con ${n(t.maj3V)} (3ª): appoggiati su ${n(t.I)} e ${n(t.V)}` }
             : { root: t.I, type: min, mark: 'ok', note: c === `${t.IV}m7` ? `${n(t.I)} = 5ª, ${n(t.min3I)} = 7ª, ${n(t.p5I)} = 9ª` : 'Tonica minore: scala di casa' },
+      ),
+    },
+    {
+      id: 'jazz-blues',
+      title: 'Blues jazz',
+      intro: [
+        `Il blues jazz ha lo stesso giro di 12 battute ma con II-V e un diminuito di passaggio: ${t.jazz.map((b) => b.join(' ')).join(' | ')}.`,
+        'Su ogni accordo si usa la pentatonica della sua fondamentale: minore sugli accordi m7 (contiene ♭3 e ♭7, le note dell\'accordo), maggiore sui dominanti 7 (la terza è dentro la scala; in alternativa la minore, per la blue third). Quando una battuta ha due accordi si cambia scala a metà battuta.',
+        'Sul diminuito di passaggio nessuna pentatonica funziona: usa le note dell\'accordo e risolvi sull\'accordo successivo.',
+      ],
+      bars: t.jazz.map((bar) =>
+        bar.map((chord): BarPart => {
+          const root = rootOf(chord).replace(/dim$/, '');
+          if (chord.endsWith('dim7')) {
+            return { chord, mark: 'no', note: `Nessuna pentatonica: usa le note dell'accordo (${Chord.get(chord).notes.map(n).join(' ')})` };
+          }
+          return chord.endsWith('m7')
+            ? { chord, root, type: min, mark: 'ok', note: '♭3 e ♭7 sono nell\'accordo' }
+            : { chord, root, type: maj, mark: 'ok', note: chord === `${up(t.I, '6M')}7` ? 'Dominante del II: porta la tensione' : 'La terza è dentro la scala' };
+        }),
       ),
     },
   ];
@@ -286,17 +302,21 @@ const MARKS: Record<Mark, { symbol: string; label: string; cls: string }> = {
     <div class="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
       @for (b of bars(); track $index) {
         <div class="rounded-xl bg-white p-3 shadow">
-          <div class="flex items-baseline justify-between gap-2">
-            <span class="text-xl font-bold text-slate-800">{{ b.chord }}</span>
-            <span class="text-xs text-slate-400">battuta {{ $index + 1 }}</span>
-          </div>
-          <div class="mt-2 text-xs uppercase tracking-wide text-slate-400">Scala</div>
-          <a [routerLink]="['/scales']" [queryParams]="{ root: b.root, type: b.type }" class="text-sm font-semibold text-slate-700 hover:underline">
-            {{ b.root }} {{ b.typeName }}
-          </a>
-          <div class="mt-1 text-xs font-semibold" [ngClass]="b.mark.cls">{{ b.mark.symbol }} {{ b.mark.label }}</div>
-          @if (b.note) {
-            <div class="mt-0.5 text-xs text-slate-500">{{ b.note }}</div>
+          <div class="mb-1 text-xs text-slate-400">battuta {{ $index + 1 }}</div>
+          @for (p of b; track $index) {
+            <div [class.mt-2]="!$first" [class.border-t]="!$first" [class.pt-2]="!$first" class="border-slate-100">
+              <div class="text-xl font-bold text-slate-800">{{ p.chord }}</div>
+              @if (p.type) {
+                <div class="mt-1 text-xs uppercase tracking-wide text-slate-400">Scala</div>
+                <a [routerLink]="['/scales']" [queryParams]="{ root: p.root, type: p.type }" class="text-sm font-semibold text-slate-700 hover:underline">
+                  {{ p.root }} {{ p.typeName }}
+                </a>
+              }
+              <div class="mt-1 text-xs font-semibold" [ngClass]="p.mark.cls">{{ p.mark.symbol }} {{ p.mark.label }}</div>
+              @if (p.note) {
+                <div class="mt-0.5 text-xs text-slate-500">{{ p.note }}</div>
+              }
+            </div>
           }
         </div>
       }
@@ -330,7 +350,7 @@ export class BluesExercises {
   protected readonly key = computed(() => BLUES_KEYS.find((k) => k.id === this.params().get('bkey')) ?? BLUES_KEYS[0]);
   protected readonly exercises = computed(() => bluesExercises(this.key().id));
   protected readonly exercise = computed(() => this.exercises().find((e) => e.id === this.params().get('bex')) ?? this.exercises()[0]);
-  protected readonly chordNames = computed(() => this.exercise().chords);
+  protected readonly chordNames = computed(() => this.exercise().bars.flat().map((p) => p.chord));
 
   /** Notes for the general rule, in the chosen key. */
   protected readonly rule = computed(() => {
@@ -351,20 +371,23 @@ export class BluesExercises {
   });
 
   protected readonly bars = computed(() =>
-    this.exercise().bars.map((b, i) => ({
-      chord: this.exercise().chords[i],
-      root: b.root,
-      type: b.type,
-      typeName: findScaleType(b.type)?.name ?? b.type,
-      mark: MARKS[b.mark],
-      note: b.note,
-    })),
+    this.exercise().bars.map((parts) =>
+      parts.map((p) => ({
+        chord: p.chord,
+        root: p.root,
+        type: p.type,
+        typeName: p.type ? (findScaleType(p.type)?.name ?? p.type) : '',
+        mark: MARKS[p.mark],
+        note: p.note,
+      })),
+    ),
   );
 
   /** The distinct scales of the exercise, with their notes. */
   protected readonly scales = computed(() => {
     const seen = new Map<string, { key: string; root: string; name: string; notes: string }>();
-    for (const b of this.exercise().bars) {
+    for (const b of this.exercise().bars.flat()) {
+      if (!b.root || !b.type) continue;
       const key = `${b.root}-${b.type}`;
       const type = findScaleType(b.type);
       if (type && !seen.has(key)) seen.set(key, { key, root: b.root, name: type.name, notes: buildScale(type, b.root).notes.join(' ') });
