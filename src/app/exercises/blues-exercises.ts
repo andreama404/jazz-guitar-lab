@@ -40,7 +40,7 @@ const ITALIAN: Record<string, string> = { C: 'Do', D: 'Re', E: 'Mi', F: 'Fa', G:
 
 /** "Eb" -> "Mi♭", "F#" -> "Fa♯". */
 function n(note: string): string {
-  return (ITALIAN[note[0]] ?? note[0]) + note.slice(1).replace(/b/g, '♭').replace(/#/g, '♯');
+  return (ITALIAN[note[0]] ?? note[0]) + note.slice(1).replaceAll('b', '♭').replaceAll('#', '♯');
 }
 
 const up = (note: string, interval: string): string => Note.simplify(Note.transpose(note, interval));

@@ -3,7 +3,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FretboardNeck } from '../fretboard/fretboard-neck';
 import { ROOTS } from '../scales/scale-theory';
-import { PlayButton } from '../shared/play-button';
 import { RootPicker } from '../shared/root-picker';
 import { SearchSelect, SelectOption } from '../shared/search-select';
 import { CHORD_TYPES, buildChord, findChordType } from './chord-theory';
@@ -13,7 +12,7 @@ type LabelMode = 'note' | 'interval';
 
 @Component({
   selector: 'app-chord-detail',
-  imports: [FretboardNeck, PlayButton, RootPicker, SearchSelect],
+  imports: [FretboardNeck, RootPicker, SearchSelect],
   templateUrl: './chord-detail.html',
 })
 export class ChordDetail {
@@ -49,7 +48,7 @@ export class ChordDetail {
   }
 
   protected pickType(id: string): void {
-    this.router.navigate([], {
+    void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { type: id },
       queryParamsHandling: 'merge',
