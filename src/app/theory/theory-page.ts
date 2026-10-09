@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RootPicker } from '../shared/root-picker';
 import { CircleOfFifths } from './circle-of-fifths';
 import { Blues } from './blues';
+import { ChordSubstitution } from './chord-substitution';
 import { ChordSymbols } from './chord-symbols';
 import { MinorField } from './minor-field';
 import { Functions } from './functions';
@@ -26,6 +27,8 @@ interface Topic {
   summary: string;
   /** False while the notes for the topic are still to be written. */
   ready: boolean;
+  /** False when the example is fixed (no key to choose). */
+  picker?: boolean;
 }
 
 const TOPICS: Topic[] = [
@@ -38,6 +41,7 @@ const TOPICS: Topic[] = [
   { id: 'harmonic-field', title: 'Campo armonico', summary: 'Triadi e quadriadi su ogni grado, con le funzioni.', ready: true },
   { id: 'minor-field', title: 'Campo armonico minore', summary: 'Naturale, armonico e melodico: gli accordi su ogni grado.', ready: true },
   { id: 'chord-symbols', title: 'Cifratura degli accordi', summary: 'Come leggere sigle come Δ, ø, °, −.', ready: true },
+  { id: 'chord-substitution', title: 'Sostituzione di accordi', summary: 'Una progressione rielaborata con le tecniche di sostituzione, in Do, Fa e Si bemolle.', ready: true, picker: false },
   { id: 'blues', title: 'Blues', summary: 'Le 12 battute, il blues minore, le scale e la blue note.', ready: true },
   { id: 'functions', title: 'Funzioni armoniche', summary: 'Tonica, sottodominante, dominante e perché il V risolve sul I.', ready: true },
   { id: 'ii-v-i', title: 'II-V-I', summary: 'La cadenza fondamentale, in maggiore e in minore, con varianti.', ready: true },
@@ -50,14 +54,14 @@ const TOPICS: Topic[] = [
 /** Theory notes: a list of topics; choosing one shows its detail. */
 @Component({
   selector: 'app-theory-page',
-  imports: [RouterLink, RootPicker, TritoneSubstitution, Extensions, PassingChords, ScalesOnChords, Intervals, CircleOfFifths, HarmonicField, MinorField, ChordSymbols, Blues, Functions, IiVI, Progressions, Modes, SecondaryDominants, ModalInterchange],
+  imports: [RouterLink, RootPicker, TritoneSubstitution, Extensions, PassingChords, ScalesOnChords, Intervals, CircleOfFifths, HarmonicField, MinorField, ChordSymbols, ChordSubstitution, Blues, Functions, IiVI, Progressions, Modes, SecondaryDominants, ModalInterchange],
   template: `
     <main class="h-full w-full overflow-y-auto px-6 py-10">
       @if (topic(); as t) {
         <a [routerLink]="[]" [queryParams]="{ topic: null }" queryParamsHandling="merge" class="mb-4 inline-block text-sm text-slate-500 hover:text-slate-900">← Tutti gli argomenti</a>
         <h1 class="mb-6 text-3xl font-bold text-slate-800">{{ t.title }}</h1>
 
-        @if (t.ready) {
+        @if (t.ready && t.picker !== false) {
           <app-root-picker class="mb-6 block" label="Nota / tonalità" [root]="root()"></app-root-picker>
         }
 
@@ -72,6 +76,7 @@ const TOPICS: Topic[] = [
             @case ('harmonic-field') { <app-harmonic-field></app-harmonic-field> }
             @case ('minor-field') { <app-minor-field></app-minor-field> }
             @case ('chord-symbols') { <app-chord-symbols></app-chord-symbols> }
+            @case ('chord-substitution') { <app-chord-substitution></app-chord-substitution> }
             @case ('blues') { <app-blues></app-blues> }
             @case ('functions') { <app-functions></app-functions> }
             @case ('ii-v-i') { <app-ii-v-i></app-ii-v-i> }
