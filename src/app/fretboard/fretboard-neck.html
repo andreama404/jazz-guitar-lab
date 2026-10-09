@@ -1,4 +1,4 @@
-<svg [attr.viewBox]="'0 0 ' + width() + ' ' + height" class="h-auto w-full" style="max-width: 520px" role="img">
+<svg [attr.viewBox]="'0 0 ' + width() + ' ' + height" class="h-auto w-full" [style.max-width.px]="maxWidth()" role="img">
   <!-- fret lines -->
   @for (x of fretLines(); track $index) {
     <line
@@ -23,14 +23,19 @@
     />
   }
 
+  <!-- muted strings -->
+  @for (s of mutedStrings(); track s) {
+    <text [attr.x]="left - 16" [attr.y]="stringY(s)" text-anchor="middle" dominant-baseline="central" class="fill-slate-500 text-base font-bold">×</text>
+  }
+
   <!-- fret numbers -->
   @for (n of fretNumbers(); track n) {
     <text [attr.x]="fretCenter(n)" [attr.y]="top + boardHeight + 36" text-anchor="middle" class="fill-slate-400 text-xs">{{ n }}</text>
   }
 
-  <!-- notes: dark dots; root = white dot with the label inside -->
+  <!-- notes: dark dots with a white label; the root is the opposite (or the other way round with rootDark) -->
   @for (dot of dots(); track dot.string + '-' + dot.fret) {
-    @if (dot.root) {
+    @if (dot.root !== rootDark()) {
       <circle [attr.cx]="dotX(dot.fret)" [attr.cy]="stringY(dot.string)" r="11" stroke-width="2" class="fill-white stroke-slate-900" />
     } @else {
       <circle [attr.cx]="dotX(dot.fret)" [attr.cy]="stringY(dot.string)" r="11" class="fill-slate-900" />
@@ -42,8 +47,8 @@
         text-anchor="middle"
         dominant-baseline="central"
         class="text-xs font-bold"
-        [class.fill-slate-900]="dot.root"
-        [class.fill-white]="!dot.root"
+        [class.fill-slate-900]="dot.root !== rootDark()"
+        [class.fill-white]="dot.root === rootDark()"
       >
         {{ dot.label }}
       </text>

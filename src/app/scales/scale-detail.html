@@ -2,53 +2,15 @@
   <h1 class="mb-1 text-3xl font-bold text-slate-800">Scale</h1>
   <p class="mb-6 text-sm text-slate-500">Cerca una scala, scegli la nota di partenza: il resto viene calcolato.</p>
 
-  <!-- scale combobox -->
-  <div class="relative mb-8 max-w-md">
-    <label for="scale-combobox" class="mb-1 block text-sm font-semibold uppercase tracking-wide text-slate-500">Scala</label>
-    <input
-      id="scale-combobox"
-      type="text"
-      role="combobox"
-      autocomplete="off"
-      aria-controls="scale-listbox"
-      aria-autocomplete="list"
-      [attr.aria-expanded]="open()"
-      placeholder="Cerca una scala (es. dorica, blues, minore...)"
-      class="w-full rounded-lg bg-white px-4 py-2.5 text-sm text-slate-800 shadow outline-none focus:ring-2 focus:ring-slate-400"
-      [value]="inputText()"
-      (input)="onInput($any($event.target).value)"
-      (focus)="onFocus($event)"
-      (click)="openList()"
-      (blur)="close()"
-      (keydown)="onKeydown($event)"
-    />
-    @if (open()) {
-      <ul
-        id="scale-listbox"
-        role="listbox"
-        class="absolute z-20 mt-1 max-h-96 w-full overflow-y-auto rounded-lg bg-white py-1 text-sm shadow-lg"
-      >
-        @for (o of options(); track o.id; let i = $index) {
-          @if (i === 0 || options()[i - 1].family !== o.family) {
-            <li class="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ o.family }}</li>
-          }
-          <li
-            role="option"
-            class="cursor-pointer px-4 py-2 text-slate-700"
-            [attr.aria-selected]="o.id === type()?.id"
-            [class.bg-slate-100]="i === active()"
-            [class.font-semibold]="o.id === type()?.id"
-            (mousedown)="$event.preventDefault(); pick(o)"
-            (mouseenter)="active.set(i)"
-          >
-            {{ o.name }}
-          </li>
-        } @empty {
-          <li class="px-4 py-2 text-slate-400">Nessuna scala trovata</li>
-        }
-      </ul>
-    }
-  </div>
+  <app-search-select
+    class="mb-8 max-w-md"
+    label="Scala"
+    placeholder="Cerca una scala (es. dorica, blues, minore...)"
+    emptyText="Nessuna scala trovata"
+    [options]="typeOptions"
+    [selectedId]="type()?.id ?? null"
+    (picked)="pickType($event)"
+  ></app-search-select>
 
   @if (type(); as t) {
     <header class="mb-6">
@@ -62,26 +24,7 @@
       <p class="mt-2 font-mono text-sm text-slate-600">{{ formula() }}</p>
     </header>
 
-    <!-- root picker -->
-    <section class="mb-8">
-      <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">Nota di partenza</h2>
-      <div class="flex flex-wrap gap-2">
-        @for (r of roots; track r) {
-          <a
-            [routerLink]="[]"
-            [queryParams]="{ root: r }"
-            queryParamsHandling="merge"
-            class="min-w-12 rounded-lg px-3 py-2 text-center text-sm font-semibold shadow transition"
-            [class.bg-slate-900]="root() === r"
-            [class.text-white]="root() === r"
-            [class.bg-white]="root() !== r"
-            [class.text-slate-700]="root() !== r"
-          >
-            {{ r }}
-          </a>
-        }
-      </div>
-    </section>
+    <app-root-picker class="mb-8 block" label="Nota di partenza" [root]="root()"></app-root-picker>
 
     @if (result(); as res) {
       <!-- notes and intervals -->
@@ -111,7 +54,6 @@
             </tbody>
           </table>
         </div>
-        <p class="mt-2 text-xs text-slate-400">Passo = distanza dalla nota successiva: S semitono, T tono, T½ tono e mezzo.</p>
       </section>
 
       <!-- harmonization -->

@@ -1,12 +1,102 @@
 <main class="h-full w-full overflow-y-auto px-6 py-10">
-  <a routerLink="/chords" class="mb-6 inline-block text-sm text-slate-500 hover:text-slate-700">&larr; Tutti gli accordi</a>
+  <h1 class="mb-1 text-3xl font-bold text-slate-800">Accordi</h1>
+  <p class="mb-6 text-sm text-slate-500">Scegli la nota e il tipo di accordo: note, intervalli e diteggiature vengono calcolati.</p>
+
+  <app-root-picker class="mb-6 block" [root]="root()"></app-root-picker>
+
+  <!-- chord type -->
+  <app-search-select
+    class="mb-8 max-w-md"
+    label="Tipo di accordo"
+    placeholder="Cerca un tipo (es. minore, maj7, dominante...)"
+    emptyText="Nessun tipo trovato"
+    [options]="typeOptions"
+    [selectedId]="type()?.id ?? null"
+    (picked)="pickType($event)"
+  ></app-search-select>
 
   @if (chord(); as c) {
-    <div class="flex flex-col items-center gap-4 rounded-xl bg-white p-8 shadow" style="max-width: 320px">
-      <h1 class="text-2xl font-bold text-slate-800">{{ c.name }}</h1>
-      <app-fretboard-diagram [dots]="dots()" [mutedStrings]="muted()" [startFret]="c.startFret ?? 1" [fretCount]="5"></app-fretboard-diagram>
-    </div>
+    <header class="mb-6">
+      <h2 class="text-2xl font-bold text-slate-800">{{ c.name }}</h2>
+      <p class="mt-1 text-sm text-slate-500">{{ c.type.description }}</p>
+    </header>
+
+    <!-- notes and intervals -->
+    <section class="mb-10">
+      <h2 class="mb-3 text-xl font-bold text-slate-800">Note e intervalli</h2>
+      <div class="overflow-x-auto">
+        <table class="w-fit overflow-hidden rounded-lg text-left text-sm shadow">
+          <tbody>
+            <tr class="bg-white">
+              <th class="bg-slate-900 px-4 py-2 font-semibold text-white">Nota</th>
+              @for (n of c.notes; track $index) {
+                <td class="px-4 py-2 text-center font-semibold text-slate-800">{{ n }}</td>
+              }
+            </tr>
+            <tr class="bg-slate-50">
+              <th class="bg-slate-900 px-4 py-2 font-semibold text-white">Intervallo</th>
+              @for (i of c.intervals; track $index) {
+                <td class="px-4 py-2 text-center font-mono text-slate-600">{{ i }}</td>
+              }
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- voicings -->
+    <section class="mb-10">
+      <div class="mb-3 flex flex-wrap items-center gap-4">
+        <h2 class="text-xl font-bold text-slate-800">Diteggiature</h2>
+        <div class="flex overflow-hidden rounded-lg text-sm shadow">
+          <button
+            type="button"
+            class="px-3 py-1.5 transition"
+            [class.bg-slate-900]="labelMode() === 'note'"
+            [class.text-white]="labelMode() === 'note'"
+            [class.bg-white]="labelMode() !== 'note'"
+            [class.text-slate-700]="labelMode() !== 'note'"
+            (click)="setLabelMode('note')"
+          >
+            Note
+          </button>
+          <button
+            type="button"
+            class="px-3 py-1.5 transition"
+            [class.bg-slate-900]="labelMode() === 'interval'"
+            [class.text-white]="labelMode() === 'interval'"
+            [class.bg-white]="labelMode() !== 'interval'"
+            [class.text-slate-700]="labelMode() !== 'interval'"
+            (click)="setLabelMode('interval')"
+          >
+            Intervalli
+          </button>
+        </div>
+      </div>
+      <p class="mb-4 text-sm text-slate-500">Il cerchio nero è la tonica; la × indica le corde da non suonare.</p>
+      <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        @for (v of voicings(); track v.id) {
+          <div class="rounded-xl bg-white p-4 shadow">
+            <div class="mb-2">
+              <div class="text-base font-semibold text-slate-800">{{ v.name }}</div>
+              <div class="text-xs text-slate-500">{{ v.description }}</div>
+            </div>
+            <app-fretboard-neck [dots]="v.dots" [mutedStrings]="v.muted" [minColumns]="6" [rootDark]="true"></app-fretboard-neck>
+          </div>
+        } @empty {
+          <p class="text-sm text-slate-500">Nessuna diteggiatura ancora definita per questo accordo.</p>
+        }
+      </div>
+    </section>
   } @else {
-    <p class="text-slate-500">Accordo non trovato.</p>
+    <p class="rounded-xl bg-white p-6 text-sm text-slate-500 shadow">
+      @if (root() && !type()) {
+        Scegli il tipo di accordo per vedere note e diteggiature.
+      } @else if (type() && !root()) {
+        Scegli la nota per vedere note e diteggiature.
+      } @else {
+        Scegli la nota e il tipo di accordo.
+      }
+    </p>
   }
 </main>

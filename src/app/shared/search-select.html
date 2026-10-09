@@ -1,0 +1,46 @@
+@if (label()) {
+  <label [for]="uid" class="mb-1 block text-sm font-semibold uppercase tracking-wide text-slate-500">{{ label() }}</label>
+}
+<input
+  [id]="uid"
+  type="text"
+  role="combobox"
+  autocomplete="off"
+  [attr.aria-controls]="uid + '-list'"
+  aria-autocomplete="list"
+  [attr.aria-expanded]="open()"
+  [placeholder]="placeholder()"
+  class="w-full rounded-lg bg-white px-4 py-2.5 text-sm text-slate-800 shadow outline-none focus:ring-2 focus:ring-slate-400"
+  [value]="inputText()"
+  (input)="onInput($any($event.target).value)"
+  (focus)="onFocus($event)"
+  (click)="openList()"
+  (blur)="close()"
+  (keydown)="onKeydown($event)"
+/>
+@if (open()) {
+  <ul
+    [id]="uid + '-list'"
+    role="listbox"
+    class="absolute z-20 mt-1 max-h-96 w-full overflow-y-auto rounded-lg bg-white py-1 text-sm shadow-lg"
+  >
+    @for (o of filtered(); track o.id; let i = $index) {
+      @if (o.group && (i === 0 || filtered()[i - 1].group !== o.group)) {
+        <li class="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ o.group }}</li>
+      }
+      <li
+        role="option"
+        class="cursor-pointer px-4 py-2 text-slate-700"
+        [attr.aria-selected]="o.id === selectedId()"
+        [class.bg-slate-100]="i === active()"
+        [class.font-semibold]="o.id === selectedId()"
+        (mousedown)="$event.preventDefault(); pick(o)"
+        (mouseenter)="active.set(i)"
+      >
+        {{ o.label }}
+      </li>
+    } @empty {
+      <li class="px-4 py-2 text-slate-400">{{ emptyText() }}</li>
+    }
+  </ul>
+}

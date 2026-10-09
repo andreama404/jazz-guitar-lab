@@ -13,8 +13,14 @@ import { FretboardDot } from './fretboard-diagram';
 })
 export class FretboardNeck {
   readonly dots = input.required<FretboardDot[]>();
+  /** Strings that are not played (shown with a cross left of the nut). */
+  readonly mutedStrings = input<number[]>([]);
   /** The window is at least this many frets wide. */
   readonly minColumns = input(8);
+  /** Draws the root as the dark dot and the other notes as white ones (default: the opposite). */
+  readonly rootDark = input(false);
+  /** Maximum rendered width in pixels. */
+  readonly maxWidth = input(520);
 
   protected readonly stringGap = 28;
   protected readonly fretWidth = 56;

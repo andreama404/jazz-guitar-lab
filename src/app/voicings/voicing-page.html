@@ -1,0 +1,84 @@
+<main class="h-full w-full overflow-y-auto px-6 py-10">
+  <h1 class="mb-1 text-3xl font-bold text-slate-800">{{ config.title }}</h1>
+  <p class="mb-6 text-sm text-slate-500">{{ config.intro }}</p>
+
+  <app-root-picker class="mb-6 block" [root]="root()"></app-root-picker>
+
+  <app-search-select
+    class="mb-8 max-w-md"
+    [label]="config.typeLabel"
+    placeholder="Cerca un tipo..."
+    emptyText="Nessun tipo trovato"
+    [options]="typeOptions"
+    [selectedId]="type()?.id ?? null"
+    (picked)="pickType($event)"
+  ></app-search-select>
+
+  @if (chord(); as c) {
+    <header class="mb-6">
+      <h2 class="text-2xl font-bold text-slate-800">{{ c.name }}</h2>
+      <p class="mt-1 text-sm text-slate-500">{{ c.type.description }}</p>
+      <p class="mt-2 text-sm text-slate-600">
+        {{ c.notes.join(' - ') }}
+        <span class="ml-2 font-mono text-slate-400">({{ c.intervals.join(' ') }})</span>
+      </p>
+    </header>
+
+    <div class="mb-4 flex flex-wrap items-center gap-4">
+      <div class="flex overflow-hidden rounded-lg text-sm shadow">
+        <button
+          type="button"
+          class="px-3 py-1.5 transition"
+          [class.bg-slate-900]="labelMode() === 'note'"
+          [class.text-white]="labelMode() === 'note'"
+          [class.bg-white]="labelMode() !== 'note'"
+          [class.text-slate-700]="labelMode() !== 'note'"
+          (click)="setLabelMode('note')"
+        >
+          Note
+        </button>
+        <button
+          type="button"
+          class="px-3 py-1.5 transition"
+          [class.bg-slate-900]="labelMode() === 'interval'"
+          [class.text-white]="labelMode() === 'interval'"
+          [class.bg-white]="labelMode() !== 'interval'"
+          [class.text-slate-700]="labelMode() !== 'interval'"
+          (click)="setLabelMode('interval')"
+        >
+          Intervalli
+        </button>
+      </div>
+      <p class="text-sm text-slate-500">{{ config.note }} Il cerchio nero è la tonica.</p>
+    </div>
+
+    @for (g of groups(); track g.title) {
+      <section class="mb-10">
+        <h2 class="mb-3 text-xl font-bold text-slate-800">{{ g.title }}</h2>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+          @for (v of g.voicings; track v.id) {
+            <div class="rounded-xl bg-white p-3 shadow">
+              <div class="mb-2">
+                <div class="text-base font-semibold text-slate-800">{{ v.name }}</div>
+                <div class="text-xs text-slate-500">{{ v.description }}</div>
+              </div>
+              <app-fretboard-neck [dots]="v.dots" [minColumns]="6" [maxWidth]="340" [rootDark]="true"></app-fretboard-neck>
+            </div>
+          } @empty {
+            <p class="text-sm text-slate-500">Nessun voicing comodo su queste corde.</p>
+          }
+        </div>
+      </section>
+    }
+  } @else {
+    <p class="rounded-xl bg-white p-6 text-sm text-slate-500 shadow">
+      @if (root() && !type()) {
+        Scegli il tipo per vedere i voicing.
+      } @else if (type() && !root()) {
+        Scegli la nota per vedere i voicing.
+      } @else {
+        Scegli la nota e il tipo.
+      }
+    </p>
+  }
+</main>

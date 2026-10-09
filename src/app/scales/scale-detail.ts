@@ -1,16 +1,18 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FretboardNeck } from '../fretboard/fretboard-neck';
 import { buildFixedForms } from '../fretboard/fixed-forms';
 import { buildPositions } from '../fretboard/fretboard-map';
-import { ROOTS, SCALE_TYPES, ScaleType, buildScale, findScaleType, scaleFormula } from './scale-theory';
+import { RootPicker } from '../shared/root-picker';
+import { SearchSelect, SelectOption } from '../shared/search-select';
+import { ROOTS, SCALE_TYPES, buildScale, findScaleType, scaleFormula } from './scale-theory';
 
 type LabelMode = 'note' | 'interval';
 
 @Component({
   selector: 'app-scale-detail',
-  imports: [FretboardNeck, RouterLink],
+  imports: [FretboardNeck, RootPicker, SearchSelect],
   templateUrl: './scale-detail.html',
 })
 export class ScaleDetail {
@@ -18,33 +20,21 @@ export class ScaleDetail {
   private readonly router = inject(Router);
   private readonly params = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
 
-  protected readonly roots = ROOTS;
   protected readonly labelMode = signal<LabelMode>('note');
 
-  protected readonly type = computed(() => findScaleType(this.params().get('type')));
+  protected readonly type = computed(() => findScaleType(this.params().get('type')) ?? SCALE_TYPES[0]);
 
   protected readonly root = computed(() => {
     const root = this.params().get('root');
-    return root !== null && ROOTS.includes(root) ? root : null;
+    return root !== null && ROOTS.includes(root) ? root : ROOTS[0];
   });
 
-  // --- scale combobox (search + dropdown) ---
-  protected readonly inputText = signal('');
-  protected readonly filterText = signal('');
-  protected readonly open = signal(false);
-  protected readonly active = signal(0);
-
-  protected readonly options = computed<readonly ScaleType[]>(() => {
-    const q = normalize(this.filterText());
-    return q ? SCALE_TYPES.filter((t) => normalize(`${t.name} ${t.tonalName}`).includes(q)) : SCALE_TYPES;
-  });
-
-  constructor() {
-    // keep the text box in sync with the selected scale (deep links, back/forward)
-    effect(() => {
-      this.inputText.set(this.type()?.name ?? '');
-    });
-  }
+  protected readonly typeOptions: SelectOption[] = SCALE_TYPES.map((t) => ({
+    id: t.id,
+    label: t.name,
+    group: t.family,
+    keywords: t.tonalName,
+  }));
 
   protected readonly formula = computed(() => {
     const type = this.type();
@@ -71,71 +61,11 @@ export class ScaleDetail {
     this.labelMode.set(mode);
   }
 
-  protected onFocus(event: FocusEvent): void {
-    (event.target as HTMLInputElement).select();
-    this.filterText.set('');
-    this.openList();
-  }
-
-  protected openList(): void {
-    const selected = this.options().findIndex((t) => t.id === this.type()?.id);
-    this.active.set(Math.max(selected, 0));
-    this.open.set(true);
-  }
-
-  protected onInput(value: string): void {
-    this.inputText.set(value);
-    this.filterText.set(value);
-    this.active.set(0);
-    this.open.set(true);
-  }
-
-  protected onKeydown(event: KeyboardEvent): void {
-    const count = this.options().length;
-    switch (event.key) {
-      case 'ArrowDown':
-        event.preventDefault();
-        if (!this.open()) this.openList();
-        else this.active.set(Math.min(this.active() + 1, count - 1));
-        break;
-      case 'ArrowUp':
-        event.preventDefault();
-        this.active.set(Math.max(this.active() - 1, 0));
-        break;
-      case 'Enter': {
-        const option = this.options()[this.active()];
-        if (this.open() && option) {
-          event.preventDefault();
-          this.pick(option);
-        }
-        break;
-      }
-      case 'Escape':
-        this.close();
-        break;
-    }
-  }
-
-  protected close(): void {
-    this.open.set(false);
-    this.inputText.set(this.type()?.name ?? '');
-  }
-
-  protected pick(type: ScaleType): void {
-    this.open.set(false);
-    this.inputText.set(type.name);
+  protected pickType(id: string): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { type: type.id },
+      queryParams: { type: id },
       queryParamsHandling: 'merge',
     });
   }
-}
-
-function normalize(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
 }
