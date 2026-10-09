@@ -1,59 +1,33 @@
-# AlphaJazzTabs
+# Jazz Guitar Lab
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.8.
+App web personale per lo studio della chitarra jazz, in italiano. Online su https://jazzguitarlab.heavymasa.workers.dev
 
-## Development server
+## Contenuti
 
-To start a local development server, run:
+- **Brani**: tablature con riproduzione (alphaTab).
+- **Accordi, Triadi, Quadriadi**: scelta di nota e tipologia, con diagrammi sul manico e ascolto.
+- **Scale**: scale e modi con diteggiature sul manico e ascolto.
+- **Arpeggi**: posizioni sul manico per ogni accordo (triadi, quadriadi, estesi).
+- **Teoria**: appunti a lista con dettaglio per argomento: intervalli, circolo delle quinte (maggiore e minore), campi armonici, funzioni, II-V-I, progressioni, modi, dominanti secondarie, intercambio modale, sostituzioni, blues, ritmo e notazione, glossario.
+- **Esercizi**: meccanica (spider, salti), arpeggi su progressioni, ear training (intervalli, accordi, scale).
 
-```bash
-ng serve
-```
+## Stack
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Angular 22 (standalone, signals), Tailwind, [Tonal](https://github.com/tonaljs/tonal) per la teoria, [alphaTab](https://www.alphatab.net/) per le tablature, Web Audio API per i suoni.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Sviluppo
 
 ```bash
-ng generate --help
+npm install
+npm start        # http://localhost:4200
+npm run build    # output in dist/alpha-jazz-tabs/browser
 ```
 
-## Building
+## Pubblicazione
 
-To build the project run:
+Il sito è su Cloudflare (static assets), collegato a questo repository: ogni push su `master` avvia una build e ripubblica.
 
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Build command: `npm run build`
+- Deploy command: `npx wrangler deploy`
+- Variabile d'ambiente: `NODE_VERSION=22`
+- Configurazione in `wrangler.jsonc` (cartella `dist/alpha-jazz-tabs/browser`, fallback SPA per le route Angular).
