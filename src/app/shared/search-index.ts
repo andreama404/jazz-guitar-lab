@@ -5,7 +5,7 @@ import { EXERCISES } from '../exercises/mechanics';
 import { PROGRESSIONS } from '../exercises/arpeggio-progression';
 import { KINDS } from '../exercises/ear-training';
 import { SCALE_PROGRESSIONS } from '../exercises/scale-progressions';
-import { BLUES_EXERCISES } from '../exercises/blues-exercises';
+import { BLUES_KEYS, bluesExercises } from '../exercises/blues-exercises';
 import { TOPICS } from '../theory/theory-page';
 
 export interface SearchEntry {
@@ -151,16 +151,18 @@ function buildIndex(): SearchEntry[] {
       weak: [],
     });
   }
-  for (const b of BLUES_EXERCISES) {
-    entries.push({
-      label: `Blues: ${b.title}`,
-      tag: 'Esercizi',
-      path: '/exercises',
-      params: { category: 'blues', bex: b.id },
-      words: [...tokenize(b.title), ...tokenize(b.id), 'blues', 'pentatonica', 'pentatonic', 'penta', 'esercizio', 'esercizi', '12', 'battute'],
-      strong: ['blues'],
-      weak: [],
-    });
+  for (const key of BLUES_KEYS) {
+    for (const b of bluesExercises(key.id)) {
+      entries.push({
+        label: `Blues in ${key.name}: ${b.title}`,
+        tag: 'Esercizi',
+        path: '/exercises',
+        params: { category: 'blues', bex: b.id, bkey: key.id },
+        words: [...tokenize(b.title), ...tokenize(b.id), ...tokenize(key.name), key.id.toLowerCase(), 'blues', 'pentatonica', 'pentatonic', 'penta', 'esercizio', 'esercizi', '12', 'battute'],
+        strong: ['blues', ...tokenize(key.name)],
+        weak: [],
+      });
+    }
   }
   for (const [id, k] of Object.entries(KINDS)) {
     entries.push({

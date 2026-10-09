@@ -33,7 +33,7 @@ export const CATEGORIES: Category[] = [
   template: `
     <main class="h-full w-full overflow-y-auto px-6 py-10">
       @if (category(); as c) {
-        <a [routerLink]="[]" [queryParams]="{ category: null, ex: null, fret: null, prog: null, sprog: null, bex: null, ear: null }" class="mb-4 inline-block text-sm text-slate-500 hover:text-slate-900">← Tutte le categorie</a>
+        <a [routerLink]="[]" [queryParams]="{ category: null, ex: null, fret: null, prog: null, sprog: null, bex: null, bkey: null, ear: null }" class="mb-4 inline-block text-sm text-slate-500 hover:text-slate-900">← Tutte le categorie</a>
         <h1 class="mb-6 text-3xl font-bold text-slate-800">{{ c.title }}</h1>
         @if (c.id === 'mechanics') {
           <app-mechanics></app-mechanics>

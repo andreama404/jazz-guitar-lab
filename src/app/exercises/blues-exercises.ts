@@ -2,6 +2,7 @@ import { NgClass } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Note } from 'tonal';
 import { buildScale, findScaleType } from '../scales/scale-theory';
 import { PlayButton } from '../shared/play-button';
 
@@ -26,108 +27,154 @@ export interface BluesExercise {
   bars: BarScale[];
 }
 
-/** Standard 12-bar blues in A. */
-const STANDARD = ['A7', 'A7', 'A7', 'A7', 'D7', 'D7', 'A7', 'A7', 'E7', 'D7', 'A7', 'E7'];
-/** The same form with the IV chord already in bar 2 ("quick change"). */
-const QUICK_CHANGE = ['A7', 'D7', 'A7', 'A7', 'D7', 'D7', 'A7', 'A7', 'E7', 'D7', 'A7', 'E7'];
-/** 12-bar blues in A minor. */
-const MINOR_BLUES = ['Am7', 'Am7', 'Am7', 'Am7', 'Dm7', 'Dm7', 'Am7', 'Am7', 'F7', 'E7', 'Am7', 'E7'];
+export interface BluesKey {
+  id: string;
+  name: string;
+}
+
+export const BLUES_KEYS: BluesKey[] = [
+  { id: 'A', name: 'La' },
+  { id: 'Bb', name: 'Si♭' },
+];
+
+const ITALIAN: Record<string, string> = { C: 'Do', D: 'Re', E: 'Mi', F: 'Fa', G: 'Sol', A: 'La', B: 'Si' };
+
+/** "Eb" -> "Mi♭", "F#" -> "Fa♯". */
+function n(note: string): string {
+  return (ITALIAN[note[0]] ?? note[0]) + note.slice(1).replace(/b/g, '♭').replace(/#/g, '♯');
+}
+
+const up = (note: string, interval: string): string => Note.simplify(Note.transpose(note, interval));
+
+/** The notes and chords of a 12-bar blues in one key, named by their role. */
+function theory(key: string) {
+  const I = key;
+  const IV = up(I, '4P');
+  const V = up(I, '5P');
+  const bVI = up(I, '6m');
+  return {
+    I,
+    IV,
+    V,
+    bVI,
+    maj3I: up(I, '3M'),
+    min3I: up(I, '3m'),
+    b7I: up(I, '7m'),
+    p5I: up(I, '5P'),
+    maj3IV: up(IV, '3M'),
+    b7IV: up(IV, '7m'),
+    maj3V: up(V, '3M'),
+    b7bVI: Note.transpose(bVI, '7m'),
+    standard: [I, I, I, I, IV, IV, I, I, V, IV, I, V].map((r) => `${r}7`),
+    quickChange: [I, IV, I, I, IV, IV, I, I, V, IV, I, V].map((r) => `${r}7`),
+    minor: [`${I}m7`, `${I}m7`, `${I}m7`, `${I}m7`, `${IV}m7`, `${IV}m7`, `${I}m7`, `${I}m7`, `${bVI}7`, `${V}7`, `${I}m7`, `${V}7`],
+  };
+}
 
 const forChord = (chords: string[], f: (chord: string, bar: number) => BarScale): BarScale[] => chords.map((c, i) => f(c, i));
-/** "Dm7" -> "D", "F7" -> "F". */
+/** "Dm7" -> "D", "Bb7" -> "Bb". */
 const rootOf = (chord: string): string => chord.replace(/m?7$/, '');
 
-export const BLUES_EXERCISES: BluesExercise[] = [
-  {
-    id: 'major-pent-per-chord',
-    title: 'Pentatonica maggiore su ogni accordo',
-    intro: [
-      'Su ogni battuta si usa la pentatonica maggiore (1 2 3 5 6) dell\'accordo: La maggiore su A7, Re maggiore su D7, Mi maggiore su E7. Si cambia scala insieme all\'accordo.',
-      'La terza dell\'accordo (Do♯, Fa♯, Sol♯) è sempre dentro la scala, quindi niente urta con l\'armonia. Manca la settima minore: il suono è più dolce e "country" del blues scuro.',
-    ],
-    chords: STANDARD,
-    bars: forChord(STANDARD, (c) => ({ root: rootOf(c), type: 'major-pentatonic', mark: 'ok' })),
-  },
-  {
-    id: 'a-major-pent-whole',
-    title: 'Dove usare la pentatonica maggiore di La',
-    intro: [
-      'Qui la scala è una sola, La maggiore pentatonica (La Si Do♯ Mi Fa♯), su tutto il giro. Ogni battuta dice se funziona.',
-      'Su A7 è la scala giusta: il Do♯ è la terza dell\'accordo. Su E7 funziona: il La è solo una tensione di passaggio (quarta di Mi). Su D7 no: il Do♯ urta con la settima dell\'accordo (Do♮), e conviene passare alla Re maggiore pentatonica o alla La minore pentatonica.',
-    ],
-    chords: STANDARD,
-    bars: forChord(STANDARD, (c) =>
-      c === 'A7'
-        ? { root: 'A', type: 'major-pentatonic', mark: 'ok', note: 'Do♯ è la terza' }
-        : c === 'E7'
-          ? { root: 'A', type: 'major-pentatonic', mark: 'warn', note: 'La = quarta, solo di passaggio' }
-          : { root: 'A', type: 'major-pentatonic', mark: 'no', note: 'Do♯ urta con Do♮ (7ª): meglio Re maggiore pent.' },
-    ),
-  },
-  {
-    id: 'a-minor-pent-whole',
-    title: 'La minore pentatonica su tutto il giro',
-    intro: [
-      'La minore pentatonica (La Do Re Mi Sol) è la scala classica del blues e si usa su tutti gli accordi del giro, senza cambiarla.',
-      'Il Do (♭3) contro il Do♯ di A7 è la tensione tipica del blues, la "blue third". Su D7 il Do è la settima dell\'accordo e il Sol la quarta: suona molto stabile. Su E7 il Sol urta con il Sol♯ (terza di Mi): è accettato nel blues, ma conviene appoggiarsi su La e Mi.',
-      'Il blues scuro usa la minore pentatonica; quello dolce la maggiore. Mescolarle, per esempio maggiore su A7 e minore su D7 ed E7, è il suono del blues.',
-    ],
-    chords: STANDARD,
-    bars: forChord(STANDARD, (c) =>
-      c === 'E7'
-        ? { root: 'A', type: 'minor-pentatonic', mark: 'warn', note: 'Sol urta con Sol♯ (3ª): appoggiati su La e Mi' }
-        : c === 'D7'
-          ? { root: 'A', type: 'minor-pentatonic', mark: 'ok', note: 'Do è la 7ª, Sol la 4ª' }
-          : { root: 'A', type: 'minor-pentatonic', mark: 'ok', note: 'Do contro Do♯: la blue third' },
-    ),
-  },
-  {
-    id: 'blues-scale',
-    title: 'La blues scale',
-    intro: [
-      'La blues scale (La Do Re Mi♭ Mi Sol) è la minore pentatonica con in più la ♭5, il Mi♭: la "blue note". Su tutto il giro valgono le stesse indicazioni della minore pentatonica.',
-      'Il Mi♭ è una nota di passaggio: si usa per muoversi tra Re e Mi (o tra Mi e Re) e non ci si ferma. Su E7 il Sol urta con il Sol♯ come nella minore pentatonica; il Mi♭ aggiunge un\'altra tensione, quindi appoggiati su La e Mi.',
-    ],
-    chords: STANDARD,
-    bars: forChord(STANDARD, (c) =>
-      c === 'E7'
-        ? { root: 'A', type: 'blues', mark: 'warn', note: 'Sol urta con Sol♯: appoggiati su La e Mi' }
-        : { root: 'A', type: 'blues', mark: 'ok', note: c === 'D7' ? 'Mi♭ di passaggio tra Re e Mi' : 'Mi♭ di passaggio tra Re e Mi (blue note)' },
-    ),
-  },
-  {
-    id: 'mix-quick-change',
-    title: 'Maggiore e minore insieme (quick change)',
-    intro: [
-      'Il giro con il "quick change": il IV grado (D7) arriva già alla battuta 2, la forma più diffusa del blues. Si alternano le due pentatoniche.',
-      'Sul I si usa la maggiore di La (dolce); sul IV la minore di La, che dà la settima (Do) e la quarta (Sol) di D7; sul V la maggiore di Mi. Il contrasto tra dolce e scuro è proprio il suono del blues.',
-    ],
-    chords: QUICK_CHANGE,
-    bars: forChord(QUICK_CHANGE, (c) =>
-      c === 'A7'
-        ? { root: 'A', type: 'major-pentatonic', mark: 'ok', note: 'Do♯ è la terza' }
-        : c === 'D7'
-          ? { root: 'A', type: 'minor-pentatonic', mark: 'ok', note: 'Do è la 7ª, Sol la 4ª' }
-          : { root: 'E', type: 'major-pentatonic', mark: 'ok', note: 'Sol♯ è la terza' },
-    ),
-  },
-  {
-    id: 'minor-blues',
-    title: 'Blues minore in La',
-    intro: [
-      'Il blues minore ha gli accordi minori sul I e sul IV (Am7, Dm7); le ultime battute usano F7 ed E7. La minore pentatonica di La è la scala di tutto il giro.',
-      'La pentatonica maggiore di La non funziona sugli accordi minori: il Do♯ urta con il Do♮, la terza minore. Su F7 il Mi (settima maggiore di Fa) urta con il Mi♭ dell\'accordo; su E7 il Sol urta con il Sol♯: in entrambi i casi appoggiati su note stabili come La.',
-    ],
-    chords: MINOR_BLUES,
-    bars: forChord(MINOR_BLUES, (c) =>
-      c === 'F7'
-        ? { root: 'A', type: 'minor-pentatonic', mark: 'warn', note: 'Mi urta con Mi♭ (7ª di Fa): appoggiati su La e Do' }
-        : c === 'E7'
-          ? { root: 'A', type: 'minor-pentatonic', mark: 'warn', note: 'Sol urta con Sol♯ (3ª): appoggiati su La e Mi' }
-          : { root: 'A', type: 'minor-pentatonic', mark: 'ok', note: c === 'Dm7' ? 'La = 5ª, Do = 7ª, Mi = 9ª' : 'Tonica minore: scala di casa' },
-    ),
-  },
-];
+/** The blues exercises in a key. */
+export function bluesExercises(key: string): BluesExercise[] {
+  const t = theory(key);
+  const maj = 'major-pentatonic';
+  const min = 'minor-pentatonic';
+  const [chordI, chordIV, chordV] = [`${t.I}7`, `${t.IV}7`, `${t.V}7`];
+  const blueNote = buildScale(findScaleType('blues')!, t.I).notes[3];
+
+  return [
+    {
+      id: 'major-pent-per-chord',
+      title: 'Pentatonica maggiore su ogni accordo',
+      intro: [
+        `Su ogni battuta si usa la pentatonica maggiore (1 2 3 5 6) dell'accordo: ${n(t.I)} maggiore su ${chordI}, ${n(t.IV)} su ${chordIV}, ${n(t.V)} su ${chordV}. Si cambia scala insieme all'accordo.`,
+        `La terza dell'accordo (${n(t.maj3I)}, ${n(t.maj3IV)}, ${n(t.maj3V)}) è sempre dentro la scala, quindi niente urta con l'armonia. Manca la settima minore: il suono è più dolce e "country" del blues scuro.`,
+      ],
+      chords: t.standard,
+      bars: forChord(t.standard, (c) => ({ root: rootOf(c), type: maj, mark: 'ok' })),
+    },
+    {
+      id: 'a-major-pent-whole',
+      title: `Dove usare la pentatonica maggiore di ${n(t.I)}`,
+      intro: [
+        `Qui la scala è una sola, ${n(t.I)} maggiore pentatonica, su tutto il giro. Ogni battuta dice se funziona.`,
+        `Su ${chordI} è la scala giusta: ${n(t.maj3I)} è la terza dell'accordo. Su ${chordV} funziona: ${n(t.I)} è solo una tensione di passaggio (quarta di ${n(t.V)}). Su ${chordIV} no: ${n(t.maj3I)} urta con la settima dell'accordo (${n(t.b7IV)}), e conviene passare alla ${n(t.IV)} maggiore pentatonica o alla ${n(t.I)} minore pentatonica.`,
+      ],
+      chords: t.standard,
+      bars: forChord(t.standard, (c) =>
+        c === chordI
+          ? { root: t.I, type: maj, mark: 'ok', note: `${n(t.maj3I)} è la terza` }
+          : c === chordV
+            ? { root: t.I, type: maj, mark: 'warn', note: `${n(t.I)} = quarta, solo di passaggio` }
+            : { root: t.I, type: maj, mark: 'no', note: `${n(t.maj3I)} urta con ${n(t.b7IV)} (7ª): meglio ${n(t.IV)} maggiore pent.` },
+      ),
+    },
+    {
+      id: 'a-minor-pent-whole',
+      title: `${n(t.I)} minore pentatonica su tutto il giro`,
+      intro: [
+        `La minore pentatonica di ${n(t.I)} è la scala classica del blues e si usa su tutti gli accordi del giro, senza cambiarla.`,
+        `Il ${n(t.min3I)} (♭3) contro il ${n(t.maj3I)} di ${chordI} è la tensione tipica del blues, la "blue third". Su ${chordIV} il ${n(t.min3I)} è la settima dell'accordo e il ${n(t.b7I)} la quarta: suona molto stabile. Su ${chordV} il ${n(t.b7I)} urta con il ${n(t.maj3V)} (terza di ${n(t.V)}): è accettato nel blues, ma conviene appoggiarsi su ${n(t.I)} e ${n(t.V)}.`,
+        'Il blues scuro usa la minore pentatonica; quello dolce la maggiore. Mescolarle, per esempio maggiore sul I e minore sul IV e sul V, è il suono del blues.',
+      ],
+      chords: t.standard,
+      bars: forChord(t.standard, (c) =>
+        c === chordV
+          ? { root: t.I, type: min, mark: 'warn', note: `${n(t.b7I)} urta con ${n(t.maj3V)} (3ª): appoggiati su ${n(t.I)} e ${n(t.V)}` }
+          : c === chordIV
+            ? { root: t.I, type: min, mark: 'ok', note: `${n(t.min3I)} è la 7ª, ${n(t.b7I)} la 4ª` }
+            : { root: t.I, type: min, mark: 'ok', note: `${n(t.min3I)} contro ${n(t.maj3I)}: la blue third` },
+      ),
+    },
+    {
+      id: 'blues-scale',
+      title: `${n(t.I)} blues scale`,
+      intro: [
+        `La blues scale è la minore pentatonica di ${n(t.I)} con in più la ♭5, il ${n(blueNote)}: la "blue note". Su tutto il giro valgono le stesse indicazioni della minore pentatonica.`,
+        `Il ${n(blueNote)} è una nota di passaggio: si usa per muoversi tra ${n(t.IV)} e ${n(t.V)} (o tra ${n(t.V)} e ${n(t.IV)}) e non ci si ferma. Su ${chordV} il ${n(t.b7I)} urta con il ${n(t.maj3V)} come nella minore pentatonica; la blue note aggiunge un'altra tensione, quindi appoggiati su ${n(t.I)} e ${n(t.V)}.`,
+      ],
+      chords: t.standard,
+      bars: forChord(t.standard, (c) =>
+        c === chordV
+          ? { root: t.I, type: 'blues', mark: 'warn', note: `${n(t.b7I)} urta con ${n(t.maj3V)}: appoggiati su ${n(t.I)} e ${n(t.V)}` }
+          : { root: t.I, type: 'blues', mark: 'ok', note: `${n(blueNote)} di passaggio tra ${n(t.IV)} e ${n(t.V)}` },
+      ),
+    },
+    {
+      id: 'mix-quick-change',
+      title: 'Maggiore e minore insieme (quick change)',
+      intro: [
+        `Il giro con il "quick change": il IV grado (${chordIV}) arriva già alla battuta 2, la forma più diffusa del blues. Si alternano le due pentatoniche.`,
+        `Sul I si usa la maggiore di ${n(t.I)} (dolce); sul IV la minore di ${n(t.I)}, che dà la settima (${n(t.min3I)}) e la quarta (${n(t.b7I)}) di ${chordIV}; sul V la maggiore di ${n(t.V)}. Il contrasto tra dolce e scuro è proprio il suono del blues.`,
+      ],
+      chords: t.quickChange,
+      bars: forChord(t.quickChange, (c) =>
+        c === chordI
+          ? { root: t.I, type: maj, mark: 'ok', note: `${n(t.maj3I)} è la terza` }
+          : c === chordIV
+            ? { root: t.I, type: min, mark: 'ok', note: `${n(t.min3I)} è la 7ª, ${n(t.b7I)} la 4ª` }
+            : { root: t.V, type: maj, mark: 'ok', note: `${n(t.maj3V)} è la terza` },
+      ),
+    },
+    {
+      id: 'minor-blues',
+      title: `Blues minore in ${n(t.I)}`,
+      intro: [
+        `Il blues minore ha gli accordi minori sul I e sul IV (${t.I}m7, ${t.IV}m7); le ultime battute usano ${t.bVI}7 e ${t.V}7. La minore pentatonica di ${n(t.I)} è la scala di tutto il giro.`,
+        `La pentatonica maggiore di ${n(t.I)} non funziona sugli accordi minori: il ${n(t.maj3I)} urta con il ${n(t.min3I)}, la terza minore. Su ${t.bVI}7 il ${n(t.p5I)} urta con il ${n(t.b7bVI)} (settima dell'accordo); su ${t.V}7 il ${n(t.b7I)} urta con il ${n(t.maj3V)}: in entrambi i casi appoggiati su note stabili come ${n(t.I)}.`,
+      ],
+      chords: t.minor,
+      bars: forChord(t.minor, (c) =>
+        c === `${t.bVI}7`
+          ? { root: t.I, type: min, mark: 'warn', note: `${n(t.p5I)} urta con ${n(t.b7bVI)} (7ª di ${n(t.bVI)}): appoggiati su ${n(t.I)} e ${n(t.min3I)}` }
+          : c === `${t.V}7`
+            ? { root: t.I, type: min, mark: 'warn', note: `${n(t.b7I)} urta con ${n(t.maj3V)} (3ª): appoggiati su ${n(t.I)} e ${n(t.V)}` }
+            : { root: t.I, type: min, mark: 'ok', note: c === `${t.IV}m7` ? `${n(t.I)} = 5ª, ${n(t.min3I)} = 7ª, ${n(t.p5I)} = 9ª` : 'Tonica minore: scala di casa' },
+      ),
+    },
+  ];
+}
 
 const MARKS: Record<Mark, { symbol: string; label: string; cls: string }> = {
   ok: { symbol: '✔', label: 'Funziona', cls: 'text-emerald-700' },
@@ -135,14 +182,32 @@ const MARKS: Record<Mark, { symbol: string; label: string; cls: string }> = {
   no: { symbol: '✘', label: 'Evita', cls: 'text-rose-700' },
 };
 
-/** Twelve-bar blues in A: which pentatonic scale to use on each bar, with a verdict per bar where the scale is the same throughout. */
+/** Twelve-bar blues: which pentatonic scale to use on each bar, with a verdict per bar where the scale is the same throughout. */
 @Component({
   selector: 'app-blues-exercises',
   imports: [NgClass, RouterLink, PlayButton],
   template: `
     <p class="mb-4 text-sm text-slate-500">
-      Il blues di 12 battute in La, con la pentatonica indicata su ogni battuta. Solo armonia: ascolta il giro e scegli le note sulle scale indicate.
+      Il blues di 12 battute, con la pentatonica indicata su ogni battuta. Solo armonia: ascolta il giro e scegli le note sulle scale indicate.
     </p>
+
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">Tonalità</h2>
+    <div class="mb-4 flex flex-wrap gap-2">
+      @for (k of keys; track k.id) {
+        <a
+          [routerLink]="[]"
+          [queryParams]="{ bkey: k.id }"
+          queryParamsHandling="merge"
+          class="rounded-lg px-3 py-2 text-sm font-semibold shadow transition"
+          [class.bg-slate-900]="key().id === k.id"
+          [class.text-white]="key().id === k.id"
+          [class.bg-white]="key().id !== k.id"
+          [class.text-slate-700]="key().id !== k.id"
+        >
+          {{ k.name }}
+        </a>
+      }
+    </div>
 
     <div class="mb-6 rounded-xl bg-white p-4 shadow">
       <h3 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">Regola generale</h3>
@@ -162,19 +227,26 @@ const MARKS: Record<Mark, { symbol: string; label: string; cls: string }> = {
           </thead>
           <tbody class="text-slate-600">
             <tr class="border-b border-slate-100 align-top">
-              <td class="py-2 pr-4 font-semibold text-slate-800">I7 <span class="font-normal text-slate-400">(A7)</span></td>
-              <td class="py-2 pr-4">✔ Maggiore del I (La). Resta sulla tonica: è la scelta più semplice e dolce.</td>
-              <td class="py-2">✔ Minore del I (La): la scala classica, con la blue third.</td>
+              <td class="py-2 pr-4 font-semibold text-slate-800">I7 <span class="font-normal text-slate-400">({{ rule().I }}7)</span></td>
+              <td class="py-2 pr-4">✔ Maggiore del I ({{ rule().nI }}). Resta sulla tonica: è la scelta più semplice e dolce.</td>
+              <td class="py-2">✔ Minore del I ({{ rule().nI }}): la scala classica, con la blue third.</td>
             </tr>
             <tr class="border-b border-slate-100 align-top">
-              <td class="py-2 pr-4 font-semibold text-slate-800">IV7 <span class="font-normal text-slate-400">(D7)</span></td>
-              <td class="py-2 pr-4">✔ Maggiore del IV (Re). ✘ Non quella del I: il Do♯ urta con la settima Do♮.</td>
-              <td class="py-2">✔ Minore del I (La): contiene la settima e la quarta. ✔ Minore del IV (Re).</td>
+              <td class="py-2 pr-4 font-semibold text-slate-800">IV7 <span class="font-normal text-slate-400">({{ rule().IV }}7)</span></td>
+              <td class="py-2 pr-4">
+                ✔ Maggiore del IV ({{ rule().nIV }}). ✘ Non quella del I: il {{ rule().maj3I }} urta con la settima {{ rule().b7IV }}.
+              </td>
+              <td class="py-2">✔ Minore del I ({{ rule().nI }}): contiene la settima e la quarta. ✔ Minore del IV ({{ rule().nIV }}).</td>
             </tr>
             <tr class="align-top">
-              <td class="py-2 pr-4 font-semibold text-slate-800">V7 <span class="font-normal text-slate-400">(E7)</span></td>
-              <td class="py-2 pr-4">✔ Maggiore del V (Mi). △ Quella del I funziona, con il La come nota di passaggio.</td>
-              <td class="py-2">✔ Minore del V (Mi). △ Minore del I (La): il Sol urta con il Sol♯, appoggiati su La e Mi.</td>
+              <td class="py-2 pr-4 font-semibold text-slate-800">V7 <span class="font-normal text-slate-400">({{ rule().V }}7)</span></td>
+              <td class="py-2 pr-4">
+                ✔ Maggiore del V ({{ rule().nV }}). △ Quella del I funziona, con il {{ rule().nI }} come nota di passaggio.
+              </td>
+              <td class="py-2">
+                ✔ Minore del V ({{ rule().nV }}). △ Minore del I ({{ rule().nI }}): il {{ rule().b7I }} urta con il {{ rule().maj3V }}, appoggiati su {{ rule().nI }} e
+                {{ rule().nV }}.
+              </td>
             </tr>
           </tbody>
         </table>
@@ -184,13 +256,13 @@ const MARKS: Record<Mark, { symbol: string; label: string; cls: string }> = {
         funziona sul I e, con attenzione, sul V, ma non sul IV: lì si cambia scala. Mescolare maggiore e minore sullo stesso accordo è il suono del blues.
       </p>
       <p class="mt-2 text-sm text-slate-600">
-        <strong>Turnaround (battute 11-12):</strong> l'ultimo E7 è il V che riporta al I. Usa la pentatonica di Mi, maggiore o minore, e appoggiati sulle note stabili
-        dell'accordo, Mi (fondamentale) e Si (quinta), per ripartire dal La.
+        <strong>Turnaround (battute 11-12):</strong> l'ultimo {{ rule().V }}7 è il V che riporta al I. Usa la pentatonica di {{ rule().nV }}, maggiore o minore, e
+        appoggiati sulle note stabili dell'accordo, {{ rule().nV }} (fondamentale) e {{ rule().p5V }} (quinta), per ripartire dal {{ rule().nI }}.
       </p>
     </div>
 
     <div class="mb-6 flex flex-wrap gap-2">
-      @for (e of exercises; track e.id) {
+      @for (e of exercises(); track e.id) {
         <a
           [routerLink]="[]"
           [queryParams]="{ bex: e.id }"
@@ -254,9 +326,29 @@ export class BluesExercises {
   private readonly route = inject(ActivatedRoute);
   private readonly params = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
 
-  protected readonly exercises = BLUES_EXERCISES;
+  protected readonly keys = BLUES_KEYS;
+  protected readonly key = computed(() => BLUES_KEYS.find((k) => k.id === this.params().get('bkey')) ?? BLUES_KEYS[0]);
+  protected readonly exercises = computed(() => bluesExercises(this.key().id));
+  protected readonly exercise = computed(() => this.exercises().find((e) => e.id === this.params().get('bex')) ?? this.exercises()[0]);
   protected readonly chordNames = computed(() => this.exercise().chords);
-  protected readonly exercise = computed(() => BLUES_EXERCISES.find((e) => e.id === this.params().get('bex')) ?? BLUES_EXERCISES[0]);
+
+  /** Notes for the general rule, in the chosen key. */
+  protected readonly rule = computed(() => {
+    const t = theory(this.key().id);
+    return {
+      I: t.I,
+      IV: t.IV,
+      V: t.V,
+      nI: n(t.I),
+      nIV: n(t.IV),
+      nV: n(t.V),
+      maj3I: n(t.maj3I),
+      b7I: n(t.b7I),
+      b7IV: n(t.b7IV),
+      maj3V: n(t.maj3V),
+      p5V: n(up(t.V, '5P')),
+    };
+  });
 
   protected readonly bars = computed(() =>
     this.exercise().bars.map((b, i) => ({
