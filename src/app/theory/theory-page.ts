@@ -2,6 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RootPicker } from '../shared/root-picker';
+import { Glossary } from './glossary';
 import { CircleOfFifths } from './circle-of-fifths';
 import { RHYTHM_LESSONS, RhythmLesson } from './rhythm-lessons';
 import { RhythmLessonView } from './rhythm-lesson';
@@ -36,6 +37,7 @@ interface Topic {
 }
 
 const TOPICS: Topic[] = [
+  { id: 'glossary', title: 'Glossario', summary: 'I termini usati nella teoria, con ricerca e link agli argomenti.', ready: true, picker: false },
   { id: 'tritone', title: 'Sostituzione di tritono', summary: 'Il dominante a un tritono di distanza e il II-V-I con subV.', ready: true },
   { id: 'extensions', title: 'Estensioni e alterazioni', summary: '9, 11, 13, ♭9, ♯9, ♯11, ♭13: quali tensioni su quale accordo.', ready: true },
   { id: 'passing', title: 'Accordi di passaggio', summary: 'Diminuito di passaggio e diminuito al posto del V7♭9.', ready: true },
@@ -61,7 +63,7 @@ const TOPICS: Topic[] = [
 /** Theory notes: a list of topics; choosing one shows its detail. */
 @Component({
   selector: 'app-theory-page',
-  imports: [RouterLink, RootPicker, TritoneSubstitution, Extensions, PassingChords, ScalesOnChords, Intervals, CircleOfFifths, HarmonicField, MinorField, ChordSymbols, ChordSubstitution, Blues, StaffAndMeasure, NoteValues, RhythmLessonView, Functions, IiVI, Progressions, Modes, SecondaryDominants, ModalInterchange],
+  imports: [RouterLink, RootPicker, TritoneSubstitution, Extensions, PassingChords, ScalesOnChords, Intervals, CircleOfFifths, HarmonicField, MinorField, ChordSymbols, ChordSubstitution, Blues, Glossary, StaffAndMeasure, NoteValues, RhythmLessonView, Functions, IiVI, Progressions, Modes, SecondaryDominants, ModalInterchange],
   template: `
     <main class="h-full w-full overflow-y-auto px-6 py-10">
       @if (topic(); as t) {
@@ -86,6 +88,7 @@ const TOPICS: Topic[] = [
             @case ('chord-substitution') { <app-chord-substitution></app-chord-substitution> }
             @case ('staff-and-measure') { <app-staff-and-measure></app-staff-and-measure> }
             @case ('note-values') { <app-note-values></app-note-values> }
+            @case ('glossary') { <app-glossary></app-glossary> }
             @case ('blues') { <app-blues></app-blues> }
             @case ('functions') { <app-functions></app-functions> }
             @case ('ii-v-i') { <app-ii-v-i></app-ii-v-i> }

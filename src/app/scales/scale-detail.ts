@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FretboardNeck } from '../fretboard/fretboard-neck';
 import { buildFixedForms } from '../fretboard/fixed-forms';
 import { buildPositions } from '../fretboard/fretboard-map';
+import { PlayButton } from '../shared/play-button';
 import { RootPicker } from '../shared/root-picker';
 import { SearchSelect, SelectOption } from '../shared/search-select';
 import { ROOTS, SCALE_TYPES, buildScale, findScaleType, scaleFormula } from './scale-theory';
@@ -12,7 +13,7 @@ type LabelMode = 'note' | 'interval';
 
 @Component({
   selector: 'app-scale-detail',
-  imports: [FretboardNeck, RootPicker, SearchSelect],
+  imports: [FretboardNeck, PlayButton, RootPicker, SearchSelect],
   templateUrl: './scale-detail.html',
 })
 export class ScaleDetail {

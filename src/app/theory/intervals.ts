@@ -1,5 +1,6 @@
 import { Component, computed } from '@angular/core';
 import { Note } from 'tonal';
+import { PlayButton } from '../shared/play-button';
 import { injectRoot } from './theory-root';
 
 const INTERVALS = [
@@ -21,6 +22,7 @@ const INTERVALS = [
 /** Interval names, size in semitones and where to find them on the guitar neck. */
 @Component({
   selector: 'app-intervals',
+  imports: [PlayButton],
   template: `
     <h2 class="text-xl font-bold text-slate-800">Intervalli</h2>
     <p class="mt-1 mb-3 text-sm text-slate-500">Nomi, semitoni e come riconoscerli sulla tastiera, a partire dalla nota scelta.</p>
@@ -39,7 +41,8 @@ const INTERVALS = [
             <th class="py-2 pr-4">Intervallo</th>
             <th class="py-2 pr-4">Semitoni</th>
             <th class="py-2 pr-4">Nota da {{ root() }}</th>
-            <th class="py-2">Corda acuta adiacente</th>
+            <th class="py-2 pr-4">Corda acuta adiacente</th>
+            <th class="py-2">Suono</th>
           </tr>
         </thead>
         <tbody>
@@ -49,7 +52,8 @@ const INTERVALS = [
               <td class="py-2 pr-4 font-semibold text-slate-800">{{ i.name }}</td>
               <td class="py-2 pr-4">{{ i.semitones }}</td>
               <td class="py-2 pr-4 font-semibold">{{ i.note }}</td>
-              <td class="py-2 text-slate-600">{{ i.adjacent }}</td>
+              <td class="py-2 pr-4 text-slate-600">{{ i.adjacent }}</td>
+              <td class="py-2"><app-play-button mode="arpeggio" [notes]="i.pair" label=""></app-play-button></td>
             </tr>
           }
         </tbody>
@@ -66,6 +70,7 @@ export class Intervals {
       return {
         ...i,
         note: Note.transpose(this.root(), i.short),
+        pair: i.semitones === 0 ? [this.root()] : [this.root(), Note.transpose(this.root(), i.short)],
         adjacent: d === 0 ? 'stesso tasto' : d > 0 ? `${d} ${d === 1 ? 'tasto' : 'tasti'} più avanti` : `${-d} ${d === -1 ? 'tasto' : 'tasti'} più indietro`,
       };
     }),

@@ -1,9 +1,10 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ChordType, QUADRIAD_TYPES, TRIAD_TYPES, buildChord, findChordType } from '../chords/chord-theory';
+import { ChordType, EXTENDED_TYPES, QUADRIAD_TYPES, TRIAD_TYPES, buildChord, findChordType } from '../chords/chord-theory';
 import { FretboardNeck } from '../fretboard/fretboard-neck';
 import { ROOTS } from '../scales/scale-theory';
+import { PlayButton } from '../shared/play-button';
 import { RootPicker } from '../shared/root-picker';
 import { SearchSelect, SelectOption } from '../shared/search-select';
 import { buildArpeggioPositions, buildDrop2Voicings, buildTriadVoicings } from './voicing-generator';
@@ -18,6 +19,7 @@ interface KindConfig {
   types: readonly ChordType[];
   note: string;
   build: typeof buildTriadVoicings;
+  play: 'dots-chord' | 'dots-sequence';
 }
 
 const KINDS: Record<Kind, KindConfig> = {
@@ -28,6 +30,7 @@ const KINDS: Record<Kind, KindConfig> = {
     types: TRIAD_TYPES,
     note: 'Rivolti in posizione stretta su tre corde adiacenti.',
     build: buildTriadVoicings,
+    play: 'dots-chord',
   },
   quadriads: {
     title: 'Quadriadi',
@@ -36,21 +39,23 @@ const KINDS: Record<Kind, KindConfig> = {
     types: QUADRIAD_TYPES,
     note: 'Voicing drop 2 su quattro corde adiacenti, in tutti i rivolti.',
     build: buildDrop2Voicings,
+    play: 'dots-chord',
   },
   arpeggios: {
     title: 'Arpeggi',
     intro: 'Scegli la nota e il tipo di arpeggio: le note dell\'accordo vengono distribuite sulla tastiera in più posizioni.',
     typeLabel: 'Tipo di arpeggio',
-    types: [...TRIAD_TYPES, ...QUADRIAD_TYPES],
+    types: [...TRIAD_TYPES, ...QUADRIAD_TYPES, ...EXTENDED_TYPES],
     note: 'Ogni posizione parte da una nota dell\'accordo sulla 6ª corda.',
     build: buildArpeggioPositions,
+    play: 'dots-sequence',
   },
 };
 
 /** Root + chord type picker with generated voicings; used by both the triads and quadriads routes. */
 @Component({
   selector: 'app-voicing-page',
-  imports: [FretboardNeck, RootPicker, SearchSelect],
+  imports: [FretboardNeck, PlayButton, RootPicker, SearchSelect],
   templateUrl: './voicing-page.html',
 })
 export class VoicingPage {
@@ -64,7 +69,7 @@ export class VoicingPage {
     id: t.id,
     label: `${t.name} (${t.symbol})`,
     keywords: t.symbol,
-    group: this.kindName === 'arpeggios' ? (TRIAD_TYPES.includes(t) ? 'Triadi' : 'Quadriadi') : undefined,
+    group: this.kindName === 'arpeggios' ? (TRIAD_TYPES.includes(t) ? 'Triadi' : QUADRIAD_TYPES.includes(t) ? 'Quadriadi' : 'Estesi') : undefined,
   }));
   protected readonly labelMode = signal<LabelMode>('note');
 

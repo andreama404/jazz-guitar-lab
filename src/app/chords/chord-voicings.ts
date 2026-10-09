@@ -29,6 +29,40 @@ const TEMPLATES: Record<string, Template[]> = {
     { shape: 'E', frets: [0, 2, 0, 0, 0, 0] },
     { shape: 'A', frets: ['x', 0, 2, 0, 1, 0] },
   ],
+  sus2: [
+    { shape: 'E', frets: [0, 2, 4, 4, 0, 0] },
+    { shape: 'A', frets: ['x', 0, 2, 2, 0, 0] },
+  ],
+  sus4: [
+    { shape: 'E', frets: [0, 2, 2, 2, 0, 0] },
+    { shape: 'A', frets: ['x', 0, 2, 2, 3, 0] },
+  ],
+  major6: [
+    { shape: 'E', frets: [0, 2, 2, 1, 2, 0] },
+    { shape: 'A', frets: ['x', 0, 2, 2, 2, 2] },
+  ],
+  minor6: [
+    { shape: 'E', frets: [0, 2, 2, 0, 2, 0] },
+    { shape: 'A', frets: ['x', 0, 2, 2, 1, 2] },
+  ],
+  'minor-major7': [
+    { shape: 'E', frets: [0, 2, 1, 0, 0, 0] },
+    { shape: 'A', frets: ['x', 0, 2, 1, 1, 0] },
+  ],
+  dominant9: [
+    { shape: 'E', frets: [0, 2, 0, 1, 0, 2] },
+    { shape: 'A', frets: ['x', 0, 2, 4, 2, 3] },
+  ],
+  dominant13: [
+    { shape: 'E', frets: [0, 2, 0, 1, 2, 0] },
+    { shape: 'A', frets: ['x', 0, 2, 0, 2, 2] },
+  ],
+  'dominant7-flat9': [{ shape: 'A', frets: ['x', 0, -1, 0, -1, 0] }],
+  'dominant7-sharp11': [{ shape: 'E', frets: [0, 'x', 0, 1, -1, 'x'] }],
+  add9: [
+    { shape: 'E', frets: [0, 2, 2, 1, 0, 2] },
+    { shape: 'A', frets: ['x', 0, 2, 4, 2, 0] },
+  ],
 };
 
 /** Chroma of the open string the root sits on, per shape: E string = 4, A string = 9. */
@@ -55,7 +89,9 @@ export function buildChordVoicings(typeId: string, notes: string[], labels: stri
 
   return (TEMPLATES[typeId] ?? [])
     .map((template) => {
-      const barre = (rootChroma - ROOT_STRING_CHROMA[template.shape] + 12) % 12;
+      let barre = (rootChroma - ROOT_STRING_CHROMA[template.shape] + 12) % 12;
+      const lowestRelative = Math.min(...template.frets.filter((f): f is number => f !== 'x'));
+      if (barre + lowestRelative < 0) barre += 12; // keep every fret on the neck
       const dots: FretboardDot[] = [];
       const muted: number[] = [];
       template.frets.forEach((relative, index) => {

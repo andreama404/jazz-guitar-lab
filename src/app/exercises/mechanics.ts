@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { PlayButton } from '../shared/play-button';
 import { FretboardNeck } from '../fretboard/fretboard-neck';
 import { FretboardDot } from '../fretboard/fretboard-diagram';
 
@@ -51,7 +52,7 @@ const FRETS = Array.from({ length: 12 }, (_, i) => i + 1);
 /** Finger-independence exercises ("spiders"): choose the pattern and the fret, see the neck and the tab. */
 @Component({
   selector: 'app-mechanics',
-  imports: [RouterLink, FretboardNeck],
+  imports: [RouterLink, FretboardNeck, PlayButton],
   template: `
     <p class="mb-4 text-sm text-slate-500">
       Ogni dito sta su un tasto: l'indice sul tasto scelto, poi un tasto per dito. Si esegue lo schema su ogni corda, nell'ordine indicato (di solito dalla 6ª alla 1ª), e si torna indietro suonando
@@ -97,6 +98,7 @@ const FRETS = Array.from({ length: 12 }, (_, i) => i + 1);
     <div class="rounded-xl bg-white p-4 shadow">
       <h3 class="text-lg font-bold text-slate-800">{{ exercise().name }}</h3>
       <p class="mb-3 text-sm text-slate-500">{{ exercise().text }} Dita: {{ exercise().order.join(' - ') }} sui tasti {{ fret() }}-{{ fret() + 3 }}.</p>
+      <div class="mb-3"><app-play-button mode="dots-ordered" [dots]="ordered()" label="Ascolta l'esercizio"></app-play-button></div>
       <app-fretboard-neck [dots]="dots()" [minColumns]="6"></app-fretboard-neck>
       <h4 class="mt-4 mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Tablatura (salita)</h4>
       <pre class="overflow-x-auto rounded-lg bg-slate-50 p-3 font-mono text-sm text-slate-800">{{ tab() }}</pre>
@@ -123,6 +125,8 @@ export class Mechanics {
     const start = this.fret();
     return (this.exercise().strings ?? STRINGS_UP).flatMap((string) => this.exercise().order.map((finger) => ({ string, fret: start + finger - 1, finger })));
   });
+
+  protected readonly ordered = computed(() => this.notes().map((n) => ({ string: n.string, fret: n.fret })));
 
   protected readonly dots = computed<FretboardDot[]>(() => {
     const seen = new Set<string>();

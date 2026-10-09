@@ -1,5 +1,6 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { Note } from 'tonal';
+import { PlayButton } from '../shared/play-button';
 
 export interface ChordItem {
   name: string;
@@ -16,7 +17,9 @@ export function chordAt(key: string, interval: string, suffix: string, roman: st
 /** Chords grouped in bars, each chord with its degree below. */
 @Component({
   selector: 'app-chord-line',
+  imports: [PlayButton],
   template: `
+    <div class="mb-2"><app-play-button mode="progression" [names]="names()" label="Ascolta gli accordi"></app-play-button></div>
     <div class="flex flex-wrap gap-2">
       @for (bar of bars(); track $index) {
         <div class="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2">
@@ -41,4 +44,5 @@ export function chordAt(key: string, interval: string, suffix: string, roman: st
 })
 export class ChordLine {
   readonly bars = input.required<ChordItem[][]>();
+  protected readonly names = computed(() => this.bars().flat().map((c) => c.name));
 }

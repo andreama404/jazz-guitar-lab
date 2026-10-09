@@ -5,6 +5,7 @@ import { Note } from 'tonal';
 import { QUADRIAD_TYPES, buildChord, findChordType } from '../chords/chord-theory';
 import { FretboardNeck } from '../fretboard/fretboard-neck';
 import { ROOTS } from '../scales/scale-theory';
+import { PlayButton } from '../shared/play-button';
 import { RootPicker } from '../shared/root-picker';
 import { buildArpeggioPositions } from '../voicings/voicing-generator';
 
@@ -57,7 +58,7 @@ const START_FRET = 5;
 /** Play a progression with the arpeggio of every chord, choosing positions that stay close on the neck. */
 @Component({
   selector: 'app-arpeggio-progression',
-  imports: [RouterLink, RootPicker, FretboardNeck],
+  imports: [RouterLink, RootPicker, FretboardNeck, PlayButton],
   template: `
     <p class="mb-4 text-sm text-slate-500">
       Suona l'arpeggio di ogni accordo nella progressione, restando il più possibile nella stessa zona della tastiera: le posizioni sono scelte in modo da
@@ -92,6 +93,7 @@ const START_FRET = 5;
             <span class="text-xs text-slate-400">{{ c.roman }}</span>
           </div>
           <div class="text-sm text-slate-600">{{ c.notes }}</div>
+          <div class="my-2"><app-play-button mode="dots-sequence" [dots]="c.dots" label="Ascolta l'arpeggio"></app-play-button></div>
           <div class="mb-2 text-xs text-slate-500">
             {{ c.position }} · {{ c.description }}
             @if (c.move !== null) {
