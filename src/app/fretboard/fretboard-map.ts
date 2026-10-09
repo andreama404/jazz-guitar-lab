@@ -119,7 +119,7 @@ function describe(dots: FretboardDot[], startNote: string, startIndex: number): 
   return {
     id: '',
     name: '',
-    description: `Parte da ${startNote} sulla 6ª corda · tasti ${min}–${max}`,
+    description: `Parte da ${startNote} sulla 6ª corda`,
     startFret,
     fretCount: Math.max(max - startFret + 1, MIN_FRET_COUNT),
     dots,

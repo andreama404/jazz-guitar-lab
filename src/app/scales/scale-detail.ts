@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FretboardNeck } from '../fretboard/fretboard-neck';
-import { buildCagedMajorForms } from '../fretboard/caged-major';
+import { buildFixedForms } from '../fretboard/fixed-forms';
 import { buildPositions } from '../fretboard/fretboard-map';
 import { ROOTS, SCALE_TYPES, ScaleType, buildScale, findScaleType, scaleFormula } from './scale-theory';
 
@@ -62,8 +62,8 @@ export class ScaleDetail {
     if (!result) return [];
     const labels = this.labelMode() === 'note' ? result.notes : result.degrees.map((d, i) => (i === 0 ? 'R' : d.interval));
     const prefix = `${result.type.id}-${result.root}`;
-    return result.type.cagedMajor
-      ? buildCagedMajorForms(result.notes, labels, prefix)
+    return result.type.fixedForms
+      ? buildFixedForms(result.type.fixedForms, result.notes, labels, prefix)
       : buildPositions(result.notes, labels, prefix, result.type.coreDegrees, result.type.formNames);
   });
 

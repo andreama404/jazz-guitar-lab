@@ -203,8 +203,8 @@
           </div>
         </div>
         <p class="mb-4 text-sm text-slate-500">
-          @if (res.type.cagedMajor) {
-            Le cinque forme CAGED della scala, da due a tre note per corda, dal capotasto verso l'alto.
+          @if (res.type.fixedForms) {
+            Le cinque posizioni della scala sull'intera tastiera, dal capotasto verso l'alto.
           } @else {
             {{ res.notes.length === 7 ? 'Tre note per corda' : 'Due note per corda' }}: ogni posizione parte da una nota diversa
             sulla 6ª corda.
@@ -216,7 +216,9 @@
             <div class="rounded-xl bg-white p-4 shadow">
               <div class="mb-2">
                 <div class="text-base font-semibold text-slate-800">{{ p.name }}</div>
-                <div class="text-xs text-slate-500">{{ p.description }}</div>
+                @if (p.description) {
+                  <div class="text-xs text-slate-500">{{ p.description }}</div>
+                }
               </div>
               <app-fretboard-neck [dots]="p.dots"></app-fretboard-neck>
             </div>

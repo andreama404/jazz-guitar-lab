@@ -19,8 +19,8 @@ export interface ScaleType {
    * low E string. Only defined for the pentatonics, where the five boxes match the five forms.
    */
   formNames?: Record<number, string>;
-  /** Fingerings come from the fixed CAGED forms of the major scale instead of the generator. */
-  cagedMajor?: boolean;
+  /** Fingerings come from this set of fixed CAGED forms (see FORM_SETS) instead of the generator. */
+  fixedForms?: string;
 }
 
 /** Roots offered in the picker (common jazz spellings). */
@@ -31,15 +31,15 @@ const MINORS = 'Minore armonica, melodica e derivate';
 const PENTA = 'Pentatoniche e blues';
 
 export const SCALE_TYPES: readonly ScaleType[] = [
-  { id: 'major', name: 'Maggiore (Ionica)', tonalName: 'major', cagedMajor: true, family: MODES, description: 'La scala di riferimento: tonica stabile, suono aperto e risolto.' },
+  { id: 'major', name: 'Maggiore (Ionica)', tonalName: 'major', fixedForms: 'major', family: MODES, description: 'La scala di riferimento: tonica stabile, suono aperto e risolto.' },
   { id: 'dorian', name: 'Dorica', tonalName: 'dorian', family: MODES, description: 'Minore con 6ª maggiore. Suono del minore jazz/blues su accordi m7.' },
   { id: 'phrygian', name: 'Frigia', tonalName: 'phrygian', family: MODES, description: 'Minore con 2ª minore: colore scuro, spagnoleggiante.' },
   { id: 'lydian', name: 'Lidia', tonalName: 'lydian', family: MODES, description: 'Maggiore con 4ª aumentata: suono sospeso e luminoso, su accordi maj7#11.' },
   { id: 'mixolydian', name: 'Misolidia', tonalName: 'mixolydian', family: MODES, description: 'Maggiore con 7ª minore: la scala dell\'accordo di dominante (7).' },
   { id: 'aeolian', name: 'Eolia (minore naturale)', tonalName: 'aeolian', family: MODES, description: 'Il minore naturale: base di molta musica modale e rock.' },
   { id: 'locrian', name: 'Locria', tonalName: 'locrian', family: MODES, description: 'Minore con 2ª e 5ª diminuita: scala dell\'accordo m7b5.' },
-  { id: 'harmonic-minor', name: 'Minore armonica', tonalName: 'harmonic minor', family: MINORS, description: 'Minore naturale con 7ª maggiore: la sensibile crea il V7 in minore.' },
-  { id: 'melodic-minor', name: 'Minore melodica', tonalName: 'melodic minor', family: MINORS, description: 'Minore con 6ª e 7ª maggiori (versione jazz): su accordi m(maj7).' },
+  { id: 'harmonic-minor', name: 'Minore armonica', tonalName: 'harmonic minor', fixedForms: 'harmonic-minor', family: MINORS, description: 'Minore naturale con 7ª maggiore: la sensibile crea il V7 in minore.' },
+  { id: 'melodic-minor', name: 'Minore melodica', tonalName: 'melodic minor', fixedForms: 'melodic-minor', family: MINORS, description: 'Minore con 6ª e 7ª maggiori (versione jazz): su accordi m(maj7).' },
   { id: 'phrygian-dominant', name: 'Frigia dominante', tonalName: 'phrygian dominant', family: MINORS, description: 'V modo della minore armonica: dominante con b9 e b13, suono flamenco/tango.' },
   { id: 'lydian-dominant', name: 'Lidia dominante', tonalName: 'lydian dominant', family: MINORS, description: 'IV modo della minore melodica: dominante con #11 (7#11).' },
   { id: 'altered', name: 'Alterata', tonalName: 'altered', intervals: ['1P', '2m', '3m', '4d', '5d', '6m', '7m'], family: MINORS, description: 'VII modo della minore melodica: dominante con tensioni alterate (7alt).' },
