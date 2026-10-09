@@ -1,0 +1,52 @@
+<svg [attr.viewBox]="'0 0 ' + width() + ' ' + height" class="h-auto w-full" style="max-width: 520px" role="img">
+  <!-- fret lines -->
+  @for (x of fretLines(); track $index) {
+    <line
+      [attr.x1]="x"
+      [attr.y1]="top"
+      [attr.x2]="x"
+      [attr.y2]="top + boardHeight"
+      [attr.stroke-width]="$index === 0 && showNut() ? 5 : 1"
+      class="stroke-slate-900"
+    />
+  }
+
+  <!-- strings (1 = top) -->
+  @for (s of stringNumbers; track s) {
+    <line
+      [attr.x1]="left"
+      [attr.y1]="stringY(s)"
+      [attr.x2]="left + columns() * fretWidth"
+      [attr.y2]="stringY(s)"
+      stroke-width="1"
+      class="stroke-slate-900"
+    />
+  }
+
+  <!-- fret numbers -->
+  @for (n of fretNumbers(); track n) {
+    <text [attr.x]="fretCenter(n)" [attr.y]="top + boardHeight + 36" text-anchor="middle" class="fill-slate-400 text-xs">{{ n }}</text>
+  }
+
+  <!-- notes: dark dots; root = white dot with the label inside -->
+  @for (dot of dots(); track dot.string + '-' + dot.fret) {
+    @if (dot.root) {
+      <circle [attr.cx]="dotX(dot.fret)" [attr.cy]="stringY(dot.string)" r="11" stroke-width="2" class="fill-white stroke-slate-900" />
+    } @else {
+      <circle [attr.cx]="dotX(dot.fret)" [attr.cy]="stringY(dot.string)" r="11" class="fill-slate-900" />
+    }
+    @if (dot.label) {
+      <text
+        [attr.x]="dotX(dot.fret)"
+        [attr.y]="stringY(dot.string)"
+        text-anchor="middle"
+        dominant-baseline="central"
+        class="text-xs font-bold"
+        [class.fill-slate-900]="dot.root"
+        [class.fill-white]="!dot.root"
+      >
+        {{ dot.label }}
+      </text>
+    }
+  }
+</svg>

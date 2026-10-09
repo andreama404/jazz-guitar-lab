@@ -20,10 +20,6 @@ export const routes: Routes = [
   },
   {
     path: 'scales',
-    loadComponent: () => import('./scales/scales-list').then((m) => m.ScalesList),
-  },
-  {
-    path: 'scales/:id',
     loadComponent: () => import('./scales/scale-detail').then((m) => m.ScaleDetail),
   },
   {

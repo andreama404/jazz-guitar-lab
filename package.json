@@ -19,6 +19,7 @@
     "@angular/router": "^22.0.0",
     "@coderline/alphatab": "^1.8.4",
     "rxjs": "~7.8.0",
+    "tonal": "6.4.3",
     "tslib": "^2.3.0"
   },
   "devDependencies": {

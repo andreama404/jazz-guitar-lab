@@ -1,13 +1,232 @@
 <main class="h-full w-full overflow-y-auto px-6 py-10">
-  <a routerLink="/scales" class="mb-6 inline-block text-sm text-slate-500 hover:text-slate-700">&larr; Tutte le scale</a>
+  <h1 class="mb-1 text-3xl font-bold text-slate-800">Scale</h1>
+  <p class="mb-6 text-sm text-slate-500">Cerca una scala, scegli la nota di partenza: il resto viene calcolato.</p>
 
-  @if (scale(); as s) {
-    <div class="flex flex-col items-center gap-4 rounded-xl bg-white p-8 shadow" style="max-width: 420px">
-      <h1 class="text-2xl font-bold text-slate-800">{{ s.name }}</h1>
-      <p class="text-center text-sm text-slate-500">{{ s.description }}</p>
-      <app-fretboard-diagram [dots]="s.dots" [startFret]="s.startFret" [fretCount]="s.fretCount"></app-fretboard-diagram>
-    </div>
+  <!-- scale combobox -->
+  <div class="relative mb-8 max-w-md">
+    <label for="scale-combobox" class="mb-1 block text-sm font-semibold uppercase tracking-wide text-slate-500">Scala</label>
+    <input
+      id="scale-combobox"
+      type="text"
+      role="combobox"
+      autocomplete="off"
+      aria-controls="scale-listbox"
+      aria-autocomplete="list"
+      [attr.aria-expanded]="open()"
+      placeholder="Cerca una scala (es. dorica, blues, minore...)"
+      class="w-full rounded-lg bg-white px-4 py-2.5 text-sm text-slate-800 shadow outline-none focus:ring-2 focus:ring-slate-400"
+      [value]="inputText()"
+      (input)="onInput($any($event.target).value)"
+      (focus)="onFocus($event)"
+      (click)="openList()"
+      (blur)="close()"
+      (keydown)="onKeydown($event)"
+    />
+    @if (open()) {
+      <ul
+        id="scale-listbox"
+        role="listbox"
+        class="absolute z-20 mt-1 max-h-96 w-full overflow-y-auto rounded-lg bg-white py-1 text-sm shadow-lg"
+      >
+        @for (o of options(); track o.id; let i = $index) {
+          @if (i === 0 || options()[i - 1].family !== o.family) {
+            <li class="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ o.family }}</li>
+          }
+          <li
+            role="option"
+            class="cursor-pointer px-4 py-2 text-slate-700"
+            [attr.aria-selected]="o.id === type()?.id"
+            [class.bg-slate-100]="i === active()"
+            [class.font-semibold]="o.id === type()?.id"
+            (mousedown)="$event.preventDefault(); pick(o)"
+            (mouseenter)="active.set(i)"
+          >
+            {{ o.name }}
+          </li>
+        } @empty {
+          <li class="px-4 py-2 text-slate-400">Nessuna scala trovata</li>
+        }
+      </ul>
+    }
+  </div>
+
+  @if (type(); as t) {
+    <header class="mb-6">
+      <h2 class="text-2xl font-bold text-slate-800">
+        {{ t.name }}
+        @if (root(); as r) {
+          <span class="text-slate-400">· {{ r }}</span>
+        }
+      </h2>
+      <p class="mt-1 text-sm text-slate-500">{{ t.description }}</p>
+      <p class="mt-2 font-mono text-sm text-slate-600">{{ formula() }}</p>
+    </header>
+
+    <!-- root picker -->
+    <section class="mb-8">
+      <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">Nota di partenza</h2>
+      <div class="flex flex-wrap gap-2">
+        @for (r of roots; track r) {
+          <a
+            [routerLink]="[]"
+            [queryParams]="{ root: r }"
+            queryParamsHandling="merge"
+            class="min-w-12 rounded-lg px-3 py-2 text-center text-sm font-semibold shadow transition"
+            [class.bg-slate-900]="root() === r"
+            [class.text-white]="root() === r"
+            [class.bg-white]="root() !== r"
+            [class.text-slate-700]="root() !== r"
+          >
+            {{ r }}
+          </a>
+        }
+      </div>
+    </section>
+
+    @if (result(); as res) {
+      <!-- notes and intervals -->
+      <section class="mb-10">
+        <h2 class="mb-3 text-xl font-bold text-slate-800">Note e intervalli</h2>
+        <div class="overflow-x-auto">
+          <table class="w-fit overflow-hidden rounded-lg text-left text-sm shadow">
+            <tbody>
+              <tr class="bg-white">
+                <th class="bg-slate-900 px-4 py-2 font-semibold text-white">Nota</th>
+                @for (d of res.degrees; track $index) {
+                  <td class="px-4 py-2 text-center font-semibold text-slate-800">{{ d.note }}</td>
+                }
+              </tr>
+              <tr class="bg-slate-50">
+                <th class="bg-slate-900 px-4 py-2 font-semibold text-white">Intervallo</th>
+                @for (d of res.degrees; track $index) {
+                  <td class="px-4 py-2 text-center font-mono text-slate-600">{{ d.interval }}</td>
+                }
+              </tr>
+              <tr class="bg-white">
+                <th class="bg-slate-900 px-4 py-2 font-semibold text-white">Passo</th>
+                @for (d of res.degrees; track $index) {
+                  <td class="px-4 py-2 text-center font-mono text-slate-500">{{ d.step }}</td>
+                }
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="mt-2 text-xs text-slate-400">Passo = distanza dalla nota successiva: S semitono, T tono, T½ tono e mezzo.</p>
+      </section>
+
+      <!-- harmonization -->
+      <section class="mb-10">
+        <h2 class="mb-3 text-xl font-bold text-slate-800">Armonizzazione</h2>
+        @if (res.triads && res.sevenths) {
+          <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <div class="overflow-x-auto">
+              <h3 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">A 3 voci (triadi)</h3>
+              <table class="w-full overflow-hidden rounded-lg text-left text-sm shadow">
+                <thead>
+                  <tr class="bg-slate-900 text-white">
+                    <th class="px-4 py-2 font-semibold">Grado</th>
+                    <th class="px-4 py-2 font-semibold">Accordo</th>
+                    <th class="px-4 py-2 font-semibold">Note</th>
+                    <th class="px-4 py-2 font-semibold">Intervalli</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of res.triads; track $index) {
+                    <tr class="odd:bg-white even:bg-slate-50">
+                      <td class="px-4 py-1.5 text-slate-700">{{ c.degree }}</td>
+                      <td class="px-4 py-1.5 font-semibold text-slate-800">{{ c.name }}</td>
+                      <td class="px-4 py-1.5 text-slate-600">{{ c.notes.join(' - ') }}</td>
+                      <td class="px-4 py-1.5 font-mono text-slate-400">{{ c.intervals.join(' ') }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <div class="overflow-x-auto">
+              <h3 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">A 4 voci (settime)</h3>
+              <table class="w-full overflow-hidden rounded-lg text-left text-sm shadow">
+                <thead>
+                  <tr class="bg-slate-900 text-white">
+                    <th class="px-4 py-2 font-semibold">Grado</th>
+                    <th class="px-4 py-2 font-semibold">Accordo</th>
+                    <th class="px-4 py-2 font-semibold">Note</th>
+                    <th class="px-4 py-2 font-semibold">Intervalli</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of res.sevenths; track $index) {
+                    <tr class="odd:bg-white even:bg-slate-50">
+                      <td class="px-4 py-1.5 text-slate-700">{{ c.degree }}</td>
+                      <td class="px-4 py-1.5 font-semibold text-slate-800">{{ c.name }}</td>
+                      <td class="px-4 py-1.5 text-slate-600">{{ c.notes.join(' - ') }}</td>
+                      <td class="px-4 py-1.5 font-mono text-slate-400">{{ c.intervals.join(' ') }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        } @else {
+          <p class="text-sm text-slate-500">
+            L'armonizzazione per terze è disponibile per le scale di sette note: questa ne ha {{ res.notes.length }}.
+          </p>
+        }
+      </section>
+
+      <!-- fingerings -->
+      <section class="mb-10">
+        <div class="mb-3 flex flex-wrap items-center gap-4">
+          <h2 class="text-xl font-bold text-slate-800">Diteggiature</h2>
+          <div class="flex overflow-hidden rounded-lg text-sm shadow">
+            <button
+              type="button"
+              class="px-3 py-1.5 transition"
+              [class.bg-slate-900]="labelMode() === 'note'"
+              [class.text-white]="labelMode() === 'note'"
+              [class.bg-white]="labelMode() !== 'note'"
+              [class.text-slate-700]="labelMode() !== 'note'"
+              (click)="setLabelMode('note')"
+            >
+              Note
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1.5 transition"
+              [class.bg-slate-900]="labelMode() === 'interval'"
+              [class.text-white]="labelMode() === 'interval'"
+              [class.bg-white]="labelMode() !== 'interval'"
+              [class.text-slate-700]="labelMode() !== 'interval'"
+              (click)="setLabelMode('interval')"
+            >
+              Intervalli
+            </button>
+          </div>
+        </div>
+        <p class="mb-4 text-sm text-slate-500">
+          @if (res.type.cagedMajor) {
+            Le cinque forme CAGED della scala, da due a tre note per corda, dal capotasto verso l'alto.
+          } @else {
+            {{ res.notes.length === 7 ? 'Tre note per corda' : 'Due note per corda' }}: ogni posizione parte da una nota diversa
+            sulla 6ª corda.
+          }
+          Il cerchio bianco è la tonica.
+        </p>
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          @for (p of positions(); track p.id) {
+            <div class="rounded-xl bg-white p-4 shadow">
+              <div class="mb-2">
+                <div class="text-base font-semibold text-slate-800">{{ p.name }}</div>
+                <div class="text-xs text-slate-500">{{ p.description }}</div>
+              </div>
+              <app-fretboard-neck [dots]="p.dots"></app-fretboard-neck>
+            </div>
+          }
+        </div>
+      </section>
+    } @else {
+      <p class="rounded-xl bg-white p-6 text-sm text-slate-500 shadow">Scegli la nota di partenza per vedere note, armonizzazione e diteggiature.</p>
+    }
   } @else {
-    <p class="text-slate-500">Scala non trovata.</p>
+    <p class="rounded-xl bg-white p-6 text-sm text-slate-500 shadow">Scegli una scala dal menu per iniziare.</p>
   }
 </main>
