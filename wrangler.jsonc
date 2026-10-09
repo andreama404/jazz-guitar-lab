@@ -1,0 +1,8 @@
+{
+  "name": "jazzguitarlab",
+  "compatibility_date": "2025-10-01",
+  "assets": {
+    "directory": "./dist/alpha-jazz-tabs/browser",
+    "not_found_handling": "single-page-application"
+  }
+}
