@@ -1,7 +1,5 @@
 import { Component } from '@angular/core';
-import { RhythmItem, RhythmStaff } from './rhythm-staff';
-
-const note = (value: RhythmItem['value'], dotted = false): RhythmItem => ({ kind: 'note', value, dotted });
+import { RhythmItem, RhythmStaff, note } from './rhythm-staff';
 
 /** The staff, bars and time signatures. */
 @Component({
@@ -71,7 +69,7 @@ export class StaffAndMeasure {
       title: '6/8',
       text: 'Sei crome per battuta, di solito sentite in due gruppi da tre.',
       signature: [6, 8],
-      items: [note('eighth'), note('eighth'), note('eighth'), note('eighth'), note('eighth'), note('eighth')],
+      items: [note('eighth'), note('eighth'), note('eighth'), note('eighth', { breakBefore: true }), note('eighth'), note('eighth')],
       spacing: 42,
     },
   ];

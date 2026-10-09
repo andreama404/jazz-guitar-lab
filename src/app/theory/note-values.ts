@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RhythmItem, RhythmStaff } from './rhythm-staff';
+import { RhythmItem, RhythmStaff, note, rest } from './rhythm-staff';
 
 type Value = RhythmItem['value'];
 
@@ -9,6 +9,7 @@ const FIGURES: { value: Value; name: string; rest: string; beats: string; fracti
   { value: 'quarter', name: 'Semiminima', rest: 'Pausa di semiminima', beats: '1', fraction: '1/4', parts: 4 },
   { value: 'eighth', name: 'Croma', rest: 'Pausa di croma', beats: '1/2', fraction: '1/8', parts: 8 },
   { value: 'sixteenth', name: 'Semicroma', rest: 'Pausa di semicroma', beats: '1/4', fraction: '1/16', parts: 16 },
+  { value: 'thirtysecond', name: 'Biscroma', rest: 'Pausa di biscroma', beats: '1/8', fraction: '1/32', parts: 32 },
 ];
 
 /** Note and rest values, how a whole note divides, and dotted notes. */
@@ -78,12 +79,12 @@ const FIGURES: { value: Value; name: string; rest: string; beats: string; fracti
 export class NoteValues {
   protected readonly figures = FIGURES;
 
-  protected note(value: Value, dotted = false): RhythmItem {
-    return { kind: 'note', value, dotted };
+  protected note(value: Value): RhythmItem {
+    return note(value);
   }
 
   protected rest(value: Value): RhythmItem {
-    return { kind: 'rest', value };
+    return rest(value);
   }
 
   protected parts(n: number): number[] {
@@ -91,7 +92,10 @@ export class NoteValues {
   }
 
   protected readonly dotted: { title: string; items: RhythmItem[] }[] = [
-    { title: 'Minima col punto (3) + semiminima (1) = 4', items: [this.note('half', true), this.note('quarter')] },
-    { title: 'Semiminima col punto (1,5) + croma (0,5), due volte = 4', items: [this.note('quarter', true), this.note('eighth'), this.note('quarter', true), this.note('eighth')] },
+    { title: 'Minima col punto (3) + semiminima (1) = 4', items: [note('half', { dots: 1 }), note('quarter')] },
+    {
+      title: 'Semiminima col punto (1,5) + croma (0,5), due volte = 4',
+      items: [note('quarter', { dots: 1 }), note('eighth'), note('quarter', { dots: 1 }), note('eighth')],
+    },
   ];
 }

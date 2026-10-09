@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ArpeggioProgression } from './arpeggio-progression';
 import { Mechanics } from './mechanics';
 
 interface Category {
@@ -13,7 +14,7 @@ interface Category {
 
 const CATEGORIES: Category[] = [
   { id: 'mechanics', title: 'Meccanica', summary: 'Spider, permutazioni delle dita e salti di corda.', ready: true },
-  { id: 'arpeggios', title: 'Arpeggi', summary: 'In arrivo.', ready: false },
+  { id: 'arpeggios', title: 'Arpeggi', summary: 'Seguire una progressione con l\'arpeggio di ogni accordo.', ready: true },
   { id: 'improvisation', title: 'Improvvisazione', summary: 'In arrivo.', ready: false },
   { id: 'triads', title: 'Triadi', summary: 'In arrivo.', ready: false },
   { id: 'voice-leading', title: 'Rivolti e voice leading', summary: 'Come collegare gli accordi spostando poco le dita. In arrivo.', ready: false },
@@ -22,14 +23,16 @@ const CATEGORIES: Category[] = [
 /** Exercises: a list of categories; choosing one shows its exercises. */
 @Component({
   selector: 'app-exercises-page',
-  imports: [RouterLink, Mechanics],
+  imports: [RouterLink, Mechanics, ArpeggioProgression],
   template: `
     <main class="h-full w-full overflow-y-auto px-6 py-10">
       @if (category(); as c) {
-        <a [routerLink]="[]" [queryParams]="{ category: null, ex: null, fret: null }" class="mb-4 inline-block text-sm text-slate-500 hover:text-slate-900">← Tutte le categorie</a>
+        <a [routerLink]="[]" [queryParams]="{ category: null, ex: null, fret: null, prog: null }" class="mb-4 inline-block text-sm text-slate-500 hover:text-slate-900">← Tutte le categorie</a>
         <h1 class="mb-6 text-3xl font-bold text-slate-800">{{ c.title }}</h1>
         @if (c.id === 'mechanics') {
           <app-mechanics></app-mechanics>
+        } @else if (c.id === 'arpeggios') {
+          <app-arpeggio-progression></app-arpeggio-progression>
         } @else {
           <p class="rounded-xl bg-white p-6 text-sm text-slate-500 shadow">Esercizi in arrivo.</p>
         }

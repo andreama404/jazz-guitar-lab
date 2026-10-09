@@ -3,6 +3,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RootPicker } from '../shared/root-picker';
 import { CircleOfFifths } from './circle-of-fifths';
+import { RHYTHM_LESSONS, RhythmLesson } from './rhythm-lessons';
+import { RhythmLessonView } from './rhythm-lesson';
 import { NoteValues } from './note-values';
 import { StaffAndMeasure } from './staff-and-measure';
 import { Blues } from './blues';
@@ -46,6 +48,7 @@ const TOPICS: Topic[] = [
   { id: 'chord-substitution', title: 'Sostituzione di accordi', summary: 'Una progressione rielaborata con le tecniche di sostituzione, in Do, Fa e Si bemolle.', ready: true, picker: false },
   { id: 'staff-and-measure', title: 'Pentagramma e misura', summary: 'Il pentagramma, le battute e le indicazioni di tempo.', ready: true, picker: false },
   { id: 'note-values', title: 'Valore delle note', summary: 'Figure ritmiche, pause e punto di valore.', ready: true, picker: false },
+  ...RHYTHM_LESSONS.map((l) => ({ id: l.id, title: l.title, summary: l.summary, ready: true, picker: false })),
   { id: 'blues', title: 'Blues', summary: 'Le 12 battute, il blues minore, le scale e la blue note.', ready: true },
   { id: 'functions', title: 'Funzioni armoniche', summary: 'Tonica, sottodominante, dominante e perché il V risolve sul I.', ready: true },
   { id: 'ii-v-i', title: 'II-V-I', summary: 'La cadenza fondamentale, in maggiore e in minore, con varianti.', ready: true },
@@ -58,7 +61,7 @@ const TOPICS: Topic[] = [
 /** Theory notes: a list of topics; choosing one shows its detail. */
 @Component({
   selector: 'app-theory-page',
-  imports: [RouterLink, RootPicker, TritoneSubstitution, Extensions, PassingChords, ScalesOnChords, Intervals, CircleOfFifths, HarmonicField, MinorField, ChordSymbols, ChordSubstitution, Blues, StaffAndMeasure, NoteValues, Functions, IiVI, Progressions, Modes, SecondaryDominants, ModalInterchange],
+  imports: [RouterLink, RootPicker, TritoneSubstitution, Extensions, PassingChords, ScalesOnChords, Intervals, CircleOfFifths, HarmonicField, MinorField, ChordSymbols, ChordSubstitution, Blues, StaffAndMeasure, NoteValues, RhythmLessonView, Functions, IiVI, Progressions, Modes, SecondaryDominants, ModalInterchange],
   template: `
     <main class="h-full w-full overflow-y-auto px-6 py-10">
       @if (topic(); as t) {
@@ -90,7 +93,13 @@ const TOPICS: Topic[] = [
             @case ('modes') { <app-modes></app-modes> }
             @case ('secondary-dominants') { <app-secondary-dominants></app-secondary-dominants> }
             @case ('modal-interchange') { <app-modal-interchange></app-modal-interchange> }
-            @default { <p class="text-sm text-slate-500">Appunti in arrivo.</p> }
+            @default {
+              @if (lesson(); as l) {
+                <app-rhythm-lesson [lesson]="l"></app-rhythm-lesson>
+              } @else {
+                <p class="text-sm text-slate-500">Appunti in arrivo.</p>
+              }
+            }
           }
         </section>
       } @else {
@@ -119,5 +128,6 @@ export class TheoryPage {
 
   protected readonly root = injectRoot();
   protected readonly topics = TOPICS;
+  protected readonly lesson = computed<RhythmLesson | null>(() => RHYTHM_LESSONS.find((l) => l.id === this.topic()?.id) ?? null);
   protected readonly topic = computed(() => TOPICS.find((t) => t.id === this.params().get('topic')) ?? null);
 }
