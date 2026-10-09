@@ -6,14 +6,14 @@ import { QUADRIAD_TYPES, TRIAD_TYPES, buildChord, findChordType } from '../chord
 import { ROOTS, SCALE_TYPES, buildScale } from '../scales/scale-theory';
 import { PlayButton, PlayMode } from '../shared/play-button';
 
-type Kind = 'intervals' | 'chords' | 'scales';
+export type Kind = 'intervals' | 'chords' | 'scales';
 
-interface Option {
+export interface Option {
   id: string;
   label: string;
 }
 
-interface Question {
+export interface Question {
   mode: PlayMode;
   notes: string[];
   answerId: string;
@@ -21,7 +21,7 @@ interface Question {
   reveal: string;
 }
 
-interface KindConfig {
+export interface KindConfig {
   title: string;
   hint: string;
   mode: PlayMode;
@@ -54,7 +54,7 @@ const chordOptions = CHORD_IDS.map((id) => {
 
 const scaleOptions = SCALE_IDS.map((id) => ({ id, label: SCALE_TYPES.find((t) => t.id === id)?.name ?? id }));
 
-const KINDS: Record<Kind, KindConfig> = {
+export const KINDS: Record<Kind, KindConfig> = {
   intervals: {
     title: 'Intervalli',
     hint: 'Ascolta le due note (la seconda è più acuta) e riconosci l\'intervallo.',

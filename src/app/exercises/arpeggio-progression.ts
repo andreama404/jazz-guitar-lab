@@ -9,19 +9,19 @@ import { PlayButton } from '../shared/play-button';
 import { RootPicker } from '../shared/root-picker';
 import { buildArpeggioPositions } from '../voicings/voicing-generator';
 
-interface Step {
+export interface Step {
   interval: string;
   type: string;
   roman: string;
 }
 
-interface Progression {
+export interface Progression {
   id: string;
   name: string;
   steps: Step[];
 }
 
-const PROGRESSIONS: Progression[] = [
+export const PROGRESSIONS: Progression[] = [
   {
     id: 'ii-v-i',
     name: 'II - V - I maggiore',

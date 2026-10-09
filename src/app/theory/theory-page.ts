@@ -26,7 +26,7 @@ import { ScalesOnChords } from './scales-on-chords';
 import { injectRoot } from './theory-root';
 import { TritoneSubstitution } from './tritone-substitution';
 
-interface Topic {
+export interface Topic {
   id: string;
   title: string;
   summary: string;
@@ -36,7 +36,7 @@ interface Topic {
   picker?: boolean;
 }
 
-const TOPICS: Topic[] = [
+export const TOPICS: Topic[] = [
   { id: 'glossary', title: 'Glossario', summary: 'I termini usati nella teoria, con ricerca e link agli argomenti.', ready: true, picker: false },
   { id: 'tritone', title: 'Sostituzione di tritono', summary: 'Il dominante a un tritono di distanza e il II-V-I con subV.', ready: true },
   { id: 'extensions', title: 'Estensioni e alterazioni', summary: '9, 11, 13, ♭9, ♯9, ♯11, ♭13: quali tensioni su quale accordo.', ready: true },

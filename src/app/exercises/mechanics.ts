@@ -5,7 +5,7 @@ import { PlayButton } from '../shared/play-button';
 import { FretboardNeck } from '../fretboard/fretboard-neck';
 import { FretboardDot } from '../fretboard/fretboard-diagram';
 
-interface Exercise {
+export interface Exercise {
   id: string;
   name: string;
   /** Finger order on each string, as 1-based fingers (1 = index ... 4 = pinky), one finger per fret. */
@@ -15,7 +15,7 @@ interface Exercise {
   text: string;
 }
 
-const EXERCISES: Exercise[] = [
+export const EXERCISES: Exercise[] = [
   { id: 'spider-1234', name: 'Spider 1-2-3-4', order: [1, 2, 3, 4], text: 'Quattro dita su quattro tasti consecutivi, una per tasto, poi si cambia corda.' },
   { id: 'spider-4321', name: 'Spider 4-3-2-1', order: [4, 3, 2, 1], text: 'Lo stesso schema al contrario: parte dal mignolo.' },
   { id: 'spider-1324', name: 'Spider 1-3-2-4', order: [1, 3, 2, 4], text: 'Alterna dita lontane e vicine: allena l\'indipendenza di medio e anulare.' },
