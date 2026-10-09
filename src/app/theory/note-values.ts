@@ -41,7 +41,7 @@ const FIGURES: { value: Value; name: string; rest: string; beats: string; fracti
               <td class="py-2 pr-4 font-semibold text-slate-800">{{ f.name }}</td>
               <td class="py-2 pr-4"><app-rhythm-staff [items]="[rest(f.value)]"></app-rhythm-staff></td>
               <td class="py-2 pr-4 font-mono text-slate-600">{{ f.fraction }}</td>
-              <td class="py-2 text-slate-600">{{ f.beats }} {{ f.beats === '1' ? 'movimento' : 'movimenti' }}</td>
+              <td class="py-2 text-slate-600">{{ f.beats }} {{ f.beats === '1' || f.beats.includes('/') ? 'movimento' : 'movimenti' }}</td>
             </tr>
           }
         </tbody>
