@@ -4,8 +4,9 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { EarTraining } from './ear-training';
 import { ArpeggioProgression } from './arpeggio-progression';
 import { Mechanics } from './mechanics';
+import { ScaleProgressions } from './scale-progressions';
 
-interface Category {
+export interface Category {
   id: string;
   title: string;
   summary: string;
@@ -13,9 +14,10 @@ interface Category {
   ready: boolean;
 }
 
-const CATEGORIES: Category[] = [
+export const CATEGORIES: Category[] = [
   { id: 'mechanics', title: 'Meccanica', summary: 'Spider, permutazioni delle dita e salti di corda.', ready: true },
   { id: 'arpeggios', title: 'Arpeggi', summary: 'Seguire una progressione con l\'arpeggio di ogni accordo.', ready: true },
+  { id: 'scale-progressions', title: 'Scale su progressioni', summary: 'Una progressione semplice per sviluppare una scala, con l\'accordo su cui usarla.', ready: true },
   { id: 'improvisation', title: 'Improvvisazione', summary: 'In arrivo.', ready: false },
   { id: 'ear-training', title: 'Ear training', summary: 'Riconoscere a orecchio intervalli, accordi e scale.', ready: true },
   { id: 'triads', title: 'Triadi', summary: 'In arrivo.', ready: false },
@@ -25,16 +27,18 @@ const CATEGORIES: Category[] = [
 /** Exercises: a list of categories; choosing one shows its exercises. */
 @Component({
   selector: 'app-exercises-page',
-  imports: [RouterLink, Mechanics, ArpeggioProgression, EarTraining],
+  imports: [RouterLink, Mechanics, ArpeggioProgression, EarTraining, ScaleProgressions],
   template: `
     <main class="h-full w-full overflow-y-auto px-6 py-10">
       @if (category(); as c) {
-        <a [routerLink]="[]" [queryParams]="{ category: null, ex: null, fret: null, prog: null, ear: null }" class="mb-4 inline-block text-sm text-slate-500 hover:text-slate-900">← Tutte le categorie</a>
+        <a [routerLink]="[]" [queryParams]="{ category: null, ex: null, fret: null, prog: null, sprog: null, ear: null }" class="mb-4 inline-block text-sm text-slate-500 hover:text-slate-900">← Tutte le categorie</a>
         <h1 class="mb-6 text-3xl font-bold text-slate-800">{{ c.title }}</h1>
         @if (c.id === 'mechanics') {
           <app-mechanics></app-mechanics>
         } @else if (c.id === 'ear-training') {
           <app-ear-training></app-ear-training>
+        } @else if (c.id === 'scale-progressions') {
+          <app-scale-progressions></app-scale-progressions>
         } @else if (c.id === 'arpeggios') {
           <app-arpeggio-progression></app-arpeggio-progression>
         } @else {

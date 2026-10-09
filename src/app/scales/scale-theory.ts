@@ -42,7 +42,7 @@ export const SCALE_TYPES: readonly ScaleType[] = [
   { id: 'melodic-minor', name: 'Minore melodica', tonalName: 'melodic minor', fixedForms: 'melodic-minor', family: MINORS, description: 'Minore con 6ª e 7ª maggiori (versione jazz): su accordi m(maj7).' },
   { id: 'phrygian-dominant', name: 'Frigia dominante', tonalName: 'phrygian dominant', family: MINORS, description: 'V modo della minore armonica: dominante con b9 e b13, suono flamenco/tango.' },
   { id: 'lydian-dominant', name: 'Lidia dominante', tonalName: 'lydian dominant', family: MINORS, description: 'IV modo della minore melodica: dominante con #11 (7#11).' },
-  { id: 'altered', name: 'Alterata', tonalName: 'altered', intervals: ['1P', '2m', '3m', '4d', '5d', '6m', '7m'], family: MINORS, description: 'VII modo della minore melodica: dominante con tensioni alterate (7alt).' },
+  { id: 'altered', name: 'Alterata (Superlocria)', tonalName: 'altered', intervals: ['1P', '2m', '3m', '4d', '5d', '6m', '7m'], family: MINORS, description: 'VII modo della minore melodica: dominante con tensioni alterate (7alt).' },
   { id: 'major-pentatonic', name: 'Pentatonica maggiore', tonalName: 'major pentatonic', formNames: { 0: 'E', 1: 'D', 2: 'C', 3: 'A', 4: 'G' }, family: PENTA, description: 'Cinque note, senza 4ª e 7ª: country, blues maggiore, melodie semplici.' },
   { id: 'minor-pentatonic', name: 'Pentatonica minore', tonalName: 'minor pentatonic', formNames: { 0: 'G', 1: 'E', 2: 'D', 3: 'C', 4: 'A' }, family: PENTA, description: 'Cinque note: il cuore del blues e del rock.' },
   { id: 'blues', name: 'Blues', tonalName: 'blues', coreDegrees: [0, 1, 2, 4, 5], formNames: { 0: 'G', 1: 'E', 2: 'D', 4: 'C', 5: 'A' }, family: PENTA, description: 'Pentatonica minore con la blue note (b5).' },
