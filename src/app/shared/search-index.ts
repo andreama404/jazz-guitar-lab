@@ -5,6 +5,7 @@ import { EXERCISES } from '../exercises/mechanics';
 import { PROGRESSIONS } from '../exercises/arpeggio-progression';
 import { KINDS } from '../exercises/ear-training';
 import { SCALE_PROGRESSIONS } from '../exercises/scale-progressions';
+import { BLUES_EXERCISES } from '../exercises/blues-exercises';
 import { TOPICS } from '../theory/theory-page';
 
 export interface SearchEntry {
@@ -147,6 +148,17 @@ function buildIndex(): SearchEntry[] {
       params: { category: 'scale-progressions', sprog: p.id },
       words: [...tokenize(p.title), ...tokenize(p.id), 'progressione', 'progressioni', 'scale', 'scala', 'superlocria', 'esercizio', 'esercizi'],
       strong: ['progressione'],
+      weak: [],
+    });
+  }
+  for (const b of BLUES_EXERCISES) {
+    entries.push({
+      label: `Blues: ${b.title}`,
+      tag: 'Esercizi',
+      path: '/exercises',
+      params: { category: 'blues', bex: b.id },
+      words: [...tokenize(b.title), ...tokenize(b.id), 'blues', 'pentatonica', 'pentatonic', 'penta', 'esercizio', 'esercizi', '12', 'battute'],
+      strong: ['blues'],
       weak: [],
     });
   }
