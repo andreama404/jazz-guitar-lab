@@ -62,7 +62,8 @@ export class VoicingPage {
   protected readonly config = KINDS[this.kindName];
   protected readonly typeOptions: SelectOption[] = this.config.types.map((t) => ({
     id: t.id,
-    label: t.name,
+    label: `${t.name} (${t.symbol})`,
+    keywords: t.symbol,
     group: this.kindName === 'arpeggios' ? (TRIAD_TYPES.includes(t) ? 'Triadi' : 'Quadriadi') : undefined,
   }));
   protected readonly labelMode = signal<LabelMode>('note');

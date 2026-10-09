@@ -30,9 +30,9 @@ export const QUADRIAD_TYPES: readonly ChordType[] = [
   { id: 'major7', name: 'Maggiore 7', symbol: 'maj7', suffix: 'maj7', description: 'Triade maggiore con settima maggiore.' },
   { id: 'minor7', name: 'Minore 7', symbol: 'm7', suffix: 'm7', description: 'Triade minore con settima minore.' },
   { id: 'dominant7', name: 'Dominante 7', symbol: '7', suffix: '7', description: 'Triade maggiore con settima minore.' },
-  { id: 'half-diminished', name: 'Semidiminuita (m7b5)', symbol: 'm7b5', suffix: 'm7b5', description: 'Triade diminuita con settima minore.' },
+  { id: 'half-diminished', name: 'Semidiminuita', symbol: 'm7b5', suffix: 'm7b5', description: 'Triade diminuita con settima minore.' },
   { id: 'diminished7', name: 'Diminuita 7', symbol: 'dim7', suffix: 'dim7', description: 'Triade diminuita con settima diminuita.' },
-  { id: 'dominant7-sharp5', name: 'Dominante 7 con quinta aumentata (7#5)', symbol: '7#5', suffix: '7#5', description: 'Dominante con quinta eccedente.' },
+  { id: 'dominant7-sharp5', name: 'Dominante 7 quinta aumentata', symbol: '7#5', suffix: '7#5', description: 'Dominante con quinta eccedente.' },
 ];
 
 export function findChordType(id: string | null, types: readonly ChordType[] = CHORD_TYPES): ChordType | null {

@@ -33,5 +33,13 @@ export const routes: Routes = [
     data: { kind: 'arpeggios' },
     loadComponent: () => import('./voicings/voicing-page').then((m) => m.VoicingPage),
   },
+  {
+    path: 'theory',
+    loadComponent: () => import('./theory/theory-page').then((m) => m.TheoryPage),
+  },
+  {
+    path: 'exercises',
+    loadComponent: () => import('./exercises/exercises-page').then((m) => m.ExercisesPage),
+  },
   { path: '**', redirectTo: 'songs' },
 ];

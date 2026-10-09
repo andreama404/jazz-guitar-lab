@@ -20,7 +20,7 @@ export class ChordDetail {
   private readonly router = inject(Router);
   private readonly params = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
 
-  protected readonly typeOptions: SelectOption[] = CHORD_TYPES.map((t) => ({ id: t.id, label: t.name }));
+  protected readonly typeOptions: SelectOption[] = CHORD_TYPES.map((t) => ({ id: t.id, label: `${t.name} (${t.symbol})`, keywords: t.symbol }));
   protected readonly labelMode = signal<LabelMode>('note');
 
   protected readonly root = computed(() => {
